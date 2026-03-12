@@ -89,6 +89,17 @@ const Library = () => {
               ))}
             </SelectContent>
           </Select>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+            <SelectTrigger className="w-full sm:w-[200px] h-10 text-sm rounded-full border-border bg-secondary">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="author">Autore A-Z</SelectItem>
+              <SelectItem value="title">Titolo A-Z</SelectItem>
+              <SelectItem value="views">Più visti</SelectItem>
+              <SelectItem value="created_at">Più recenti</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Count */}
