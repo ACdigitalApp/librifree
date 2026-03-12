@@ -20,14 +20,14 @@ const MassImportTool = () => {
   const [source, setSource] = useState<ImportSource>("gutenberg");
   const [language, setLanguage] = useState("it");
   const [startPage, setStartPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(500);
+  const [totalPages, setTotalPages] = useState(1000);
   const [batchSize, setBatchSize] = useState(32);
   const [delayMs, setDelayMs] = useState(2000);
   const [running, setRunning] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [logs, setLogs] = useState<ImportLog[]>([]);
   const [totals, setTotals] = useState({ imported: 0, skipped: 0 });
-  const [targetBooks, setTargetBooks] = useState(10000);
+  const [targetBooks, setTargetBooks] = useState(50000);
   const abortRef = useRef(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
@@ -192,7 +192,7 @@ const MassImportTool = () => {
           <Input
             type="number"
             min={1}
-            max={500}
+            max={1000}
             value={totalPages}
             onChange={(e) => setTotalPages(Number(e.target.value))}
             disabled={running}
