@@ -172,6 +172,17 @@ const BookPage = () => {
               </p>
             )}
 
+            {/* Primary CTA: Summary */}
+            <div className="mt-6">
+              <Link
+                to={`/riassunto/${book.slug}`}
+                className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-primary/90 shadow-md"
+              >
+                <BookMarked className="w-4 h-4" />
+                Leggi il Riassunto
+              </Link>
+            </div>
+
             {/* SEO page links */}
             <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
               {seoLinks.map(({ to, label, icon: Icon }) => (
