@@ -20,7 +20,7 @@ const MassImportTool = () => {
   const [source, setSource] = useState<ImportSource>("gutenberg");
   const [language, setLanguage] = useState("it");
   const [startPage, setStartPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(500);
+  const [totalPages, setTotalPages] = useState(1000);
   const [batchSize, setBatchSize] = useState(32);
   const [delayMs, setDelayMs] = useState(2000);
   const [running, setRunning] = useState(false);
