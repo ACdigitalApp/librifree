@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useBooks, useCategories } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Search, Loader2 } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -19,13 +19,12 @@ const Library = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categorySlug, setCategorySlug] = useState("");
 
-  // Debounce search
   const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const handleSearch = (value: string) => {
     setSearch(value);
     if (timer) clearTimeout(timer);
-    const t = setTimeout(() => setDebouncedSearch(value), 300);
-    setTimer(t);
+    const newTimer = setTimeout(() => setDebouncedSearch(value), 300);
+    setTimer(newTimer);
   };
 
   const { data: categories } = useCategories();
@@ -41,43 +40,41 @@ const Library = () => {
   const totalCount = data?.pages[0]?.totalCount ?? 0;
 
   return (
-    <div className="min-h-svh px-6 sm:px-8 py-12">
-      <div className="mx-auto max-w-[1280px]">
-        <header className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              {t("home")}
-            </Link>
-            <LanguageSelector />
-          </div>
-          <h1
-            className="font-display font-medium text-3xl md:text-4xl text-foreground"
-            style={{ letterSpacing: "-0.02em" }}
-          >
+    <div className="min-h-svh">
+      {/* Header */}
+      <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="flex items-center justify-between px-6 sm:px-8 py-3 max-w-[1280px] mx-auto">
+          <Link to="/" className="text-sm font-semibold tracking-tight hover:opacity-70 transition-opacity">
+            Librifree
+          </Link>
+          <LanguageSelector />
+        </div>
+      </nav>
+
+      <div className="px-6 sm:px-8 py-10 max-w-[1280px] mx-auto">
+        {/* Title */}
+        <div className="mb-8">
+          <h1 className="font-semibold text-2xl md:text-3xl tracking-tight text-foreground">
             {t("library")}
           </h1>
-          <p className="mt-2 text-muted-foreground font-body">
+          <p className="mt-1 text-sm text-muted-foreground">
             {t("librarySubtitle")}
           </p>
-        </header>
+        </div>
 
         {/* Search & Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-10">
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-9 font-body"
+              className="pl-9 h-10 text-sm rounded-full border-border bg-secondary"
             />
           </div>
           <Select value={categorySlug} onValueChange={(v) => setCategorySlug(v === "all" ? "" : v)}>
-            <SelectTrigger className="w-full sm:w-[220px] font-body">
+            <SelectTrigger className="w-full sm:w-[200px] h-10 text-sm rounded-full border-border bg-secondary">
               <SelectValue placeholder={t("allCategories")} />
             </SelectTrigger>
             <SelectContent>
@@ -91,78 +88,74 @@ const Library = () => {
           </Select>
         </div>
 
-        {/* Results count */}
+        {/* Count */}
         {!isLoading && (
-          <p className="text-sm text-muted-foreground font-body mb-6">
+          <p className="text-xs text-muted-foreground mb-6">
             {totalCount} {totalCount === 1 ? t("bookSingular") : t("bookPlural")}
           </p>
         )}
 
-        {/* Loading state */}
+        {/* Loading */}
         {isLoading && (
           <div className="flex justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
 
-        {/* Books Grid */}
+        {/* Grid */}
         {!isLoading && (
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {allBooks.map((book) => (
               <Link
                 key={book.id}
                 to={`/libri/${book.slug}`}
-                className="group space-y-3"
+                className="group"
               >
-                <div className="overflow-hidden rounded-md bg-muted">
+                <div className="overflow-hidden rounded-lg bg-secondary aspect-[2/3]">
                   {book.cover_url ? (
                     <img
                       src={book.cover_url}
                       alt={`${t("coverAlt")} ${book.title}`}
-                      className="aspect-[2/3] w-full object-cover transition-transform duration-[250ms] group-hover:scale-105"
-                      style={{
-                        outline: "1px solid rgba(0,0,0,0.08)",
-                        outlineOffset: "-1px",
-                      }}
+                      className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                       loading="lazy"
                     />
                   ) : (
-                    <div className="aspect-[2/3] w-full flex items-center justify-center">
-                      <span className="text-muted-foreground text-xs font-body">
+                    <div className="w-full h-full flex items-center justify-center p-4">
+                      <span className="text-muted-foreground text-xs text-center">
                         {book.title}
                       </span>
                     </div>
                   )}
                 </div>
-                <div className="text-sm font-body">
-                  <p className="font-semibold text-foreground truncate">
+                <div className="mt-2.5">
+                  <p className="text-sm font-medium text-foreground truncate leading-tight">
                     {book.title}
                   </p>
-                  <p className="text-muted-foreground">{book.author}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {book.author}
+                  </p>
                 </div>
               </Link>
             ))}
           </div>
         )}
 
-        {/* Empty state */}
+        {/* Empty */}
         {!isLoading && allBooks.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-muted-foreground font-body">{t("noResults")}</p>
+            <p className="text-sm text-muted-foreground">{t("noResults")}</p>
           </div>
         )}
 
         {/* Load more */}
         {hasNextPage && (
-          <div className="flex justify-center mt-12">
+          <div className="flex justify-center mt-10">
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 font-body"
+              className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-border disabled:opacity-50"
             >
-              {isFetchingNextPage && (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              )}
+              {isFetchingNextPage && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("loadMore")}
             </button>
           </div>
