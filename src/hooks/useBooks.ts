@@ -75,7 +75,7 @@ export function useAdminStats() {
   });
 }
 
-export function useAdminBooks(opts: { page?: number; search?: string; sortBy?: string } = {}) {
+export function useAdminBooks(opts: { page?: number; search?: string; sortBy?: string; pageSize?: number } = {}) {
   return useQuery({
     queryKey: ["admin-books", opts],
     queryFn: () => fetchAdminBooks(opts),
