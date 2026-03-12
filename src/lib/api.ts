@@ -23,9 +23,10 @@ export async function fetchBooks({
   language?: string;
   sortBy?: "title" | "views" | "created_at";
 } = {}) {
+  // Only select listing columns (exclude heavy content/summary fields)
   let query = supabase
     .from("books")
-    .select("*, categories(*)", { count: "exact" });
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)", { count: "exact" });
 
   if (search) {
     query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
@@ -84,7 +85,7 @@ export async function fetchCategories() {
 export async function fetchRecentBooks(limit = 12) {
   const { data, error } = await supabase
     .from("books")
-    .select("*, categories(*)")
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)")
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -94,7 +95,7 @@ export async function fetchRecentBooks(limit = 12) {
 export async function fetchPopularBooks(limit = 12) {
   const { data, error } = await supabase
     .from("books")
-    .select("*, categories(*)")
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)")
     .order("views", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -102,29 +103,9 @@ export async function fetchPopularBooks(limit = 12) {
 }
 
 export async function fetchCategoriesWithCount() {
-  // Single query with count per category using a grouped approach
-  const { data: books, error: booksError } = await supabase
-    .from("books")
-    .select("category_id");
-  if (booksError) throw booksError;
-
-  const { data: categories, error: catError } = await supabase
-    .from("categories")
-    .select("*")
-    .order("name");
-  if (catError) throw catError;
-
-  // Count in memory instead of N+1 queries
-  const countMap = new Map<string, number>();
-  for (const b of books ?? []) {
-    if (b.category_id) {
-      countMap.set(b.category_id, (countMap.get(b.category_id) ?? 0) + 1);
-    }
-  }
-
-  return (categories ?? [])
-    .map((cat) => ({ ...cat, count: countMap.get(cat.id) ?? 0 }))
-    .filter((c) => c.count > 0);
+  const { data, error } = await supabase.rpc("get_categories_with_count");
+  if (error) throw error;
+  return (data ?? []) as Array<Category & { count: number }>;
 }
 
 export async function incrementBookViews(slug: string) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useBooks, useCategories } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -22,13 +22,12 @@ const Library = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categorySlug, setCategorySlug] = useState(initialCategory);
 
-  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const handleSearch = (value: string) => {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleSearch = useCallback((value: string) => {
     setSearch(value);
-    if (timer) clearTimeout(timer);
-    const newTimer = setTimeout(() => setDebouncedSearch(value), 300);
-    setTimer(newTimer);
-  };
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }, []);
 
   const { data: categories } = useCategories();
   const {
