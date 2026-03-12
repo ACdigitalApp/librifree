@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useBook } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Loader2, Sparkles, BookOpen } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, BookOpen, Users, Quote, Layers, List, BookMarked, Clock } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
