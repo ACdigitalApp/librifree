@@ -181,6 +181,10 @@ const AdminPanel = () => {
               {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               Generate AI Covers
             </Button>
+            <Button size="sm" variant="outline" onClick={handleFindDuplicates} disabled={findingDuplicates}>
+              {findingDuplicates && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+              Trova Libri Doppi
+            </Button>
           </div>
           <div className="border-t border-border pt-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
