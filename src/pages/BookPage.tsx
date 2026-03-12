@@ -4,7 +4,7 @@ import { useBook } from "@/hooks/useBooks";
 import { incrementBookViews } from "@/lib/api";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers, Clock } from "lucide-react";
+import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers, Clock, GraduationCap } from "lucide-react";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 import { Helmet } from "react-helmet-async";
