@@ -6,82 +6,81 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Map Italian titles to original titles for better Open Library search
-const TITLE_MAP: Record<string, string> = {
-  "Il cappotto": "The Overcoat Gogol",
-  "Il castello": "The Castle Kafka",
-  "Il corvo e altre poesie": "The Raven Poe",
-  "Il giro del mondo in ottanta giorni": "Around the World in Eighty Days Verne",
-  "L'importanza di chiamarsi Ernesto": "The Importance of Being Earnest Wilde",
-  "Le anime morte": "Dead Souls Gogol",
-  "Lo strano caso del dottor Jekyll e del signor Hyde": "Dr Jekyll and Mr Hyde Stevenson",
-  "Padri e figli": "Fathers and Sons Turgenev",
-  "Racconto di due città": "A Tale of Two Cities Dickens",
-  "Robinson Crusoe": "Robinson Crusoe Defoe",
-  "Sogno di una notte di mezza estate": "A Midsummer Night's Dream Shakespeare",
-  "David Copperfield": "David Copperfield Dickens",
-  "Dracula": "Dracula Stoker",
-};
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const supabase = createClient(supabaseUrl, serviceRoleKey);
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  const { data: books, error } = await supabase
-    .from("books")
-    .select("id, title, author")
-    .or("cover_url.is.null,cover_url.eq.")
-    .order("title");
+    const body = await req.json().catch(() => ({}));
+    const batchSize = body.batch_size || 10;
 
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+    console.log("Starting cover fetch, batch:", batchSize);
 
-  const results: any[] = [];
+    const { data: books, error, count } = await supabase
+      .from("books")
+      .select("id, title, author", { count: "exact" })
+      .is("cover_url", null)
+      .order("views", { ascending: false })
+      .limit(batchSize);
 
-  for (const book of books || []) {
-    try {
-      // Use mapped English title if available
-      const searchTerm = TITLE_MAP[book.title] || `${book.title} ${book.author}`;
-      const searchQuery = encodeURIComponent(searchTerm);
-      const searchRes = await fetch(
-        `https://openlibrary.org/search.json?q=${searchQuery}&limit=5&fields=key,cover_i,title,author_name`
-      );
-      const searchData = await searchRes.json();
-
-      let coverId: number | null = null;
-      if (searchData.docs) {
-        for (const doc of searchData.docs) {
-          if (doc.cover_i) {
-            coverId = doc.cover_i;
-            break;
-          }
-        }
-      }
-
-      if (coverId) {
-        const coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
-        await supabase.from("books").update({ cover_url: coverUrl }).eq("id", book.id);
-        results.push({ title: book.title, status: "found", cover_url: coverUrl });
-      } else {
-        results.push({ title: book.title, status: "not_found", searchTerm });
-      }
-
-      await new Promise((r) => setTimeout(r, 200));
-    } catch (e) {
-      results.push({ title: book.title, status: "error" });
+    if (error) {
+      console.error("Query error:", error.message);
+      throw error;
     }
-  }
 
-  return new Response(JSON.stringify({ results }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+    console.log(`Found ${books?.length} books without covers (total: ${count})`);
+
+    let found = 0;
+    let notFound = 0;
+    const results: string[] = [];
+
+    for (const book of books || []) {
+      try {
+        const q = encodeURIComponent(`${book.title} ${book.author}`);
+        const res = await fetch(
+          `https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&fields=items(volumeInfo/imageLinks)`,
+          { signal: AbortSignal.timeout(3000) }
+        );
+        
+        if (res.ok) {
+          const data = await res.json();
+          const img = data.items?.[0]?.volumeInfo?.imageLinks;
+          const url = img ? (img.thumbnail || img.smallThumbnail || "").replace("http://", "https://") : "";
+          
+          if (url) {
+            await supabase.from("books").update({ cover_url: url }).eq("id", book.id);
+            found++;
+            results.push(`✅ ${book.title}`);
+          } else {
+            await supabase.from("books").update({ cover_url: "no-cover" }).eq("id", book.id);
+            notFound++;
+            results.push(`❌ ${book.title}`);
+          }
+        } else {
+          results.push(`⚠️ ${book.title} (API ${res.status})`);
+        }
+      } catch (e) {
+        results.push(`⚠️ ${book.title} (timeout)`);
+      }
+    }
+
+    console.log(`Done: found=${found}, notFound=${notFound}`);
+
+    return new Response(
+      JSON.stringify({ found, notFound, processed: results.length, remaining: (count || 0) - batchSize, results }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    console.error("Error:", msg);
+    return new Response(
+      JSON.stringify({ error: msg }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
 });

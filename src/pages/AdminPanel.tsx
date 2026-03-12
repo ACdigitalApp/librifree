@@ -62,11 +62,23 @@ const AdminPanel = () => {
 
   const handleFetchCovers = async () => {
     setImportLoading(true);
+    let totalFound = 0;
+    let rounds = 0;
     try {
-      await supabase.functions.invoke("fetch-book-covers");
-      toast({ title: "Cover fetch started" });
+      while (rounds < 50) {
+        const { data, error } = await supabase.functions.invoke("fetch-book-covers", {
+          body: { batch_size: 25 },
+        });
+        if (error) throw error;
+        totalFound += data.found || 0;
+        rounds++;
+        toast({ title: `Copertine: +${totalFound} trovate (batch ${rounds})` });
+        if ((data.remaining || 0) <= 0) break;
+      }
+      toast({ title: `✅ Completato: ${totalFound} copertine aggiunte in ${rounds} batch` });
+      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
     } catch {
-      toast({ title: "Error", variant: "destructive" });
+      toast({ title: `Copertine: ${totalFound} trovate prima dell'errore`, variant: "destructive" });
     } finally {
       setImportLoading(false);
     }
