@@ -4,6 +4,7 @@ import { useBooks, useCategories } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { Search, Loader2 } from "lucide-react";
+import { AdBanner } from "@/components/Monetization";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -139,6 +140,13 @@ const Library = () => {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* Ad banner after grid */}
+        {!isLoading && allBooks.length > 0 && (
+          <div className="mt-10">
+            <AdBanner slot="library-bottom" />
           </div>
         )}
 
