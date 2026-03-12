@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-type ContentType = "characters" | "themes" | "quotes" | "chapters" | "analysis";
+type ContentType = "characters" | "themes" | "quotes" | "chapters" | "analysis" | "historical_context";
 
 const PROMPTS: Record<ContentType, (title: string, author: string, lang: string) => string> = {
   characters: (title, author, lang) =>
