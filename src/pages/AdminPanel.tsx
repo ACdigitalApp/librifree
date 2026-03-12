@@ -3,9 +3,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminStats, useAdminBooks, useIsAdmin, useCategories } from "@/hooks/useBooks";
 import { deleteBook, updateBook } from "@/lib/api";
-import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye } from "lucide-react";
+import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal } from "lucide-react";
 import MassImportTool from "@/components/admin/MassImportTool";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -33,6 +34,8 @@ const AdminPanel = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [importLoading, setImportLoading] = useState(false);
+  const [command, setCommand] = useState("");
+  const [commandResult, setCommandResult] = useState("");
 
   const { data: stats, isLoading: loadingStats } = useAdminStats();
   const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: "views" });
@@ -154,6 +157,39 @@ const AdminPanel = () => {
 
         {/* Mass Import Tool */}
         <MassImportTool />
+
+        {/* Command Box */}
+        <div className="rounded-xl border border-border p-5 mb-8">
+          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Terminal className="h-4 w-4" /> Comando
+          </h2>
+          <Textarea
+            placeholder="Scrivi un comando o una nota..."
+            value={command}
+            onChange={(e) => setCommand(e.target.value)}
+            className="min-h-[80px] text-sm mb-3"
+          />
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                setCommandResult(`Comando eseguito: "${command}"`);
+                toast({ title: "Comando inviato", description: command });
+              }}
+              disabled={!command.trim()}
+            >
+              Esegui
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => { setCommand(""); setCommandResult(""); }}>
+              Pulisci
+            </Button>
+          </div>
+          {commandResult && (
+            <pre className="mt-3 text-xs bg-secondary rounded-lg p-3 whitespace-pre-wrap text-muted-foreground">
+              {commandResult}
+            </pre>
+          )}
+        </div>
 
         {/* Quick Tools */}
         <div className="rounded-xl border border-border p-5 mb-8">
