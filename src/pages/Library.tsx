@@ -143,6 +143,13 @@ const Library = () => {
           </div>
         )}
 
+        {/* Ad banner after grid */}
+        {!isLoading && allBooks.length > 0 && (
+          <div className="mt-10">
+            <AdBanner slot="library-bottom" />
+          </div>
+        )}
+
         {/* Empty */}
         {!isLoading && allBooks.length === 0 && (
           <div className="text-center py-20">
