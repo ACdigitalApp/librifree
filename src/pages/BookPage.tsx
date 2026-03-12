@@ -26,6 +26,11 @@ const BookPage = () => {
   const [fontSize, setFontSize] = useState<FontSize>("md");
   const [showToc, setShowToc] = useState(false);
 
+  // Track views
+  useEffect(() => {
+    if (slug) incrementBookViews(slug);
+  }, [slug]);
+
   const toc = useMemo(() => {
     if (!book?.content) return [];
     const parser = new DOMParser();
