@@ -84,6 +84,31 @@ const AdminPanel = () => {
     }
   };
 
+  const handleGenerateAICovers = async () => {
+    setImportLoading(true);
+    let totalGenerated = 0;
+    let rounds = 0;
+    try {
+      while (rounds < 20) {
+        const { data, error } = await supabase.functions.invoke("generate-ai-covers", {
+          body: { batch_size: 2 },
+        });
+        if (error) throw error;
+        totalGenerated += data.generated || 0;
+        rounds++;
+        toast({ title: `Copertine AI: +${totalGenerated} generate (batch ${rounds})` });
+        if ((data.remaining || 0) <= 0) break;
+        if (data.generated === 0 && data.failed > 0) break; // rate limit or credits
+      }
+      toast({ title: `✅ Completato: ${totalGenerated} copertine AI generate in ${rounds} batch` });
+      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+    } catch {
+      toast({ title: `Copertine AI: ${totalGenerated} generate prima dell'errore`, variant: "destructive" });
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   if (checkingAdmin || isAdmin === undefined) {
     return (
       <div className="min-h-svh flex items-center justify-center">
@@ -137,6 +162,10 @@ const AdminPanel = () => {
             <Button size="sm" variant="outline" onClick={handleFetchCovers} disabled={importLoading}>
               {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               Fetch Covers
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleGenerateAICovers} disabled={importLoading}>
+              {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+              Generate AI Covers
             </Button>
           </div>
         </div>
