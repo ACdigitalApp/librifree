@@ -25,6 +25,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const body = await req.json().catch(() => ({}));
     const batchSize = body.batch_size || 5;
+    const coverInstructions = body.cover_instructions || "";
 
     // Find books with 'no-cover' marker (Google Books didn't find them)
     const { data: books, error, count } = await supabase
