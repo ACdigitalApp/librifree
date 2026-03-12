@@ -167,7 +167,7 @@ const MassImportTool = () => {
           <Progress value={progress} className="h-2 mb-3" />
           <div className="flex gap-4 text-xs text-muted-foreground mb-3">
             <span>Progress: {progress}%</span>
-            <span className="text-green-600">Imported: {totals.imported}</span>
+            <span className="text-primary">Imported: {totals.imported}</span>
             <span>Skipped: {totals.skipped}</span>
           </div>
           <div className="max-h-40 overflow-y-auto rounded-md bg-muted/50 p-3 text-xs font-mono space-y-0.5">
