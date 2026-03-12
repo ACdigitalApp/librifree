@@ -195,10 +195,23 @@ const BookPage = () => {
           {processedContent && (
             <div className="prose-book" dangerouslySetInnerHTML={{ __html: processedContent }} />
           )}
+
+          {/* Monetization */}
+          <div className="mt-12 space-y-6">
+            <AdBanner slot="book-mid" />
+            <AffiliateBookLink title={book.title} author={book.author} />
+            <BookRecommendations categoryId={book.category_id} slug={book.slug} />
+          </div>
         </article>
       </div>
     </>
   );
 };
+
+function BookRecommendations({ categoryId, slug }: { categoryId: string | null; slug: string }) {
+  const { data: recommended } = useRecommendedBooks(categoryId, slug);
+  if (!recommended?.length) return null;
+  return <RecommendedBooks books={recommended} />;
+}
 
 export default BookPage;

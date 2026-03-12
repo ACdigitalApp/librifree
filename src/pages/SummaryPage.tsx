@@ -117,8 +117,15 @@ const SummaryPage = () => {
             </div>
           )}
 
+          {/* Monetization */}
+          <div className="mt-12 space-y-6">
+            <AdBanner slot="summary-mid" />
+            <AffiliateBookLink title={book.title} author={book.author} />
+            <SummaryRecommendations categoryId={book.category_id} slug={book.slug} />
+          </div>
+
           {/* Link to read the full book */}
-          <div className="mt-16 text-center border-t border-border pt-8">
+          <div className="mt-10 text-center border-t border-border pt-8">
             <Link
               to={`/libri/${book.slug}`}
               className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-border"
@@ -132,5 +139,11 @@ const SummaryPage = () => {
     </>
   );
 };
+
+function SummaryRecommendations({ categoryId, slug }: { categoryId: string | null; slug: string }) {
+  const { data: recommended } = useRecommendedBooks(categoryId, slug);
+  if (!recommended?.length) return null;
+  return <RecommendedBooks books={recommended} />;
+}
 
 export default SummaryPage;

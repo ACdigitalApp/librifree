@@ -128,7 +128,14 @@ const SEOContentPage = ({ type, titleKey, seoPrefix, urlPrefix }: SEOContentPage
             </div>
           )}
 
-          <div className="mt-16 text-center border-t border-border pt-8">
+          {/* Monetization */}
+          <div className="mt-12 space-y-6">
+            <AdBanner slot={`seo-${type}`} />
+            <AffiliateBookLink title={book.title} author={book.author} />
+            <SEORecommendations categoryId={book.category_id} slug={book.slug} />
+          </div>
+
+          <div className="mt-10 text-center border-t border-border pt-8">
             <Link
               to={`/libri/${book.slug}`}
               className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-border"
@@ -142,6 +149,12 @@ const SEOContentPage = ({ type, titleKey, seoPrefix, urlPrefix }: SEOContentPage
     </>
   );
 };
+
+function SEORecommendations({ categoryId, slug }: { categoryId: string | null; slug: string }) {
+  const { data: recommended } = useRecommendedBooks(categoryId, slug);
+  if (!recommended?.length) return null;
+  return <RecommendedBooks books={recommended} />;
+}
 
 export const CharactersPage = () => (
   <SEOContentPage type="characters" titleKey="charactersOf" seoPrefix="Personaggi di" urlPrefix="personaggi" />
