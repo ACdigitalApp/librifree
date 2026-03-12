@@ -172,4 +172,10 @@ export const ChaptersPage = () => (
   <SEOContentPage type="chapters" titleKey="chaptersOf" seoPrefix="Guida ai capitoli di" urlPrefix="capitoli" />
 );
 
-export default SEOContentPage;
+export const ThemesPage = () => (
+  <SEOContentPage type="themes" titleKey="themesOf" seoPrefix="Temi e motivi di" urlPrefix="temi" />
+);
+
+export const HistoricalContextPage = () => (
+  <SEOContentPage type="historical_context" titleKey="historicalContextOf" seoPrefix="Contesto storico di" urlPrefix="contesto-storico" />
+);
