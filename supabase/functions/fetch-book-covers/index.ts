@@ -15,12 +15,16 @@ Deno.serve(async (req) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  // Get all books without covers
+  // Get body params
+  const { limit = 15, offset = 0 } = await req.json().catch(() => ({}));
+
+  // Get books without covers
   const { data: books, error } = await supabase
     .from("books")
     .select("id, title, author")
     .or("cover_url.is.null,cover_url.eq.")
-    .order("title");
+    .order("title")
+    .range(offset, offset + limit - 1);
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -33,7 +37,6 @@ Deno.serve(async (req) => {
 
   for (const book of books || []) {
     try {
-      // Search Open Library for the book
       const searchQuery = encodeURIComponent(`${book.title} ${book.author}`);
       const searchRes = await fetch(
         `https://openlibrary.org/search.json?q=${searchQuery}&limit=3&fields=key,cover_i,title,author_name`
@@ -41,9 +44,7 @@ Deno.serve(async (req) => {
       const searchData = await searchRes.json();
 
       let coverId: number | null = null;
-
-      if (searchData.docs && searchData.docs.length > 0) {
-        // Find the first result with a cover
+      if (searchData.docs) {
         for (const doc of searchData.docs) {
           if (doc.cover_i) {
             coverId = doc.cover_i;
@@ -54,34 +55,42 @@ Deno.serve(async (req) => {
 
       if (coverId) {
         const coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
-
-        // Update the book record
         const { error: updateError } = await supabase
           .from("books")
           .update({ cover_url: coverUrl })
           .eq("id", book.id);
 
-        if (updateError) {
-          results.push({ id: book.id, title: book.title, status: "error", cover_url: undefined });
-        } else {
-          results.push({ id: book.id, title: book.title, status: "found", cover_url: coverUrl });
-        }
+        results.push({
+          id: book.id,
+          title: book.title,
+          status: updateError ? "error" : "found",
+          cover_url: coverUrl,
+        });
       } else {
         results.push({ id: book.id, title: book.title, status: "not_found" });
       }
 
-      // Small delay to be polite to Open Library API
-      await new Promise((r) => setTimeout(r, 200));
+      await new Promise((r) => setTimeout(r, 150));
     } catch (e) {
       results.push({ id: book.id, title: book.title, status: "error" });
     }
   }
 
+  // Count remaining
+  const { count } = await supabase
+    .from("books")
+    .select("id", { count: "exact", head: true })
+    .or("cover_url.is.null,cover_url.eq.");
+
   const found = results.filter((r) => r.status === "found").length;
-  const notFound = results.filter((r) => r.status === "not_found").length;
 
   return new Response(
-    JSON.stringify({ total: results.length, found, notFound, results }),
+    JSON.stringify({
+      processed: results.length,
+      found,
+      remaining: count ?? 0,
+      results,
+    }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
 });
