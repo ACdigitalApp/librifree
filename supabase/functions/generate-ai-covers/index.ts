@@ -52,6 +52,7 @@ The cover should be artistic and literary, with a classic book design aesthetic.
 Include the title "${book.title}" prominently and the author name "${book.author}" below it.
 Use rich colors, elegant typography, and imagery that evokes the book's themes.
 The style should be reminiscent of high-quality Italian literary publishing.
+${coverInstructions ? `\nAdditional instructions: ${coverInstructions}` : ""}
 On a clean background suitable for a book cover.`;
 
         const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
