@@ -232,6 +232,17 @@ const AdminPanel = () => {
               <SelectItem value="created_at">Più recenti</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={String(adminPageSize)} onValueChange={(v) => { setAdminPageSize(v === "all" ? 9999 : Number(v)); setPage(0); }}>
+            <SelectTrigger className="w-[100px] h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+              <SelectItem value="all">Tutti</SelectItem>
+            </SelectContent>
+          </Select>
           <p className="text-xs text-muted-foreground">
             {booksData?.totalCount ?? 0} books
           </p>
