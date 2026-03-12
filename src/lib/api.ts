@@ -21,7 +21,7 @@ export async function fetchBooks({
   search?: string;
   categorySlug?: string;
   language?: string;
-  sortBy?: "title" | "author" | "views" | "created_at";
+  sortBy?: "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at";
 } = {}) {
   // Only select listing columns (exclude heavy content/summary fields)
   let query = supabase
