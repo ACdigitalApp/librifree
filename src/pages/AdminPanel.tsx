@@ -271,6 +271,31 @@ const AdminPanel = () => {
           </div>
         </div>
 
+        {/* Duplicates Results */}
+        {duplicates.length > 0 && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold">
+                {duplicates.length} gruppi di libri doppi trovati ({duplicates.reduce((s, d) => s + d.remove.length, 0)} da eliminare)
+              </h3>
+              <Button size="sm" variant="destructive" onClick={handleDeleteDuplicates}>
+                <Trash2 className="h-3 w-3 mr-1" /> Elimina tutti i doppi
+              </Button>
+            </div>
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {duplicates.map((group, i) => (
+                <div key={i} className="rounded-lg border border-border bg-background p-3 text-sm">
+                  <p className="font-medium">✅ Tenere: {group.keep.title} — {group.keep.author} ({group.keep.views} views)</p>
+                  {group.remove.map((r: any) => (
+                    <p key={r.id} className="text-destructive ml-4">❌ Eliminare: {r.title} — {r.author} ({r.views} views)</p>
+                  ))}
+                  <p className="text-xs text-muted-foreground mt-1">{group.reason}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Book List */}
         <div className="mb-4 flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 max-w-sm">
