@@ -91,7 +91,7 @@ const AdminPanel = () => {
     try {
       while (rounds < 20) {
         const { data, error } = await supabase.functions.invoke("generate-ai-covers", {
-          body: { batch_size: 5 },
+          body: { batch_size: 2 },
         });
         if (error) throw error;
         totalGenerated += data.generated || 0;
