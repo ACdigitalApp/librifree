@@ -27,7 +27,7 @@ const MassImportTool = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [logs, setLogs] = useState<ImportLog[]>([]);
   const [totals, setTotals] = useState({ imported: 0, skipped: 0 });
-  const [targetBooks, setTargetBooks] = useState(10000);
+  const [targetBooks, setTargetBooks] = useState(50000);
   const abortRef = useRef(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
