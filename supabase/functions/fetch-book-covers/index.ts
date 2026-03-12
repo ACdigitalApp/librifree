@@ -6,6 +6,23 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Map Italian titles to original titles for better Open Library search
+const TITLE_MAP: Record<string, string> = {
+  "Il cappotto": "The Overcoat Gogol",
+  "Il castello": "The Castle Kafka",
+  "Il corvo e altre poesie": "The Raven Poe",
+  "Il giro del mondo in ottanta giorni": "Around the World in Eighty Days Verne",
+  "L'importanza di chiamarsi Ernesto": "The Importance of Being Earnest Wilde",
+  "Le anime morte": "Dead Souls Gogol",
+  "Lo strano caso del dottor Jekyll e del signor Hyde": "Dr Jekyll and Mr Hyde Stevenson",
+  "Padri e figli": "Fathers and Sons Turgenev",
+  "Racconto di due città": "A Tale of Two Cities Dickens",
+  "Robinson Crusoe": "Robinson Crusoe Defoe",
+  "Sogno di una notte di mezza estate": "A Midsummer Night's Dream Shakespeare",
+  "David Copperfield": "David Copperfield Dickens",
+  "Dracula": "Dracula Stoker",
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -15,16 +32,11 @@ Deno.serve(async (req) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  // Get body params
-  const { limit = 15, offset = 0 } = await req.json().catch(() => ({}));
-
-  // Get books without covers
   const { data: books, error } = await supabase
     .from("books")
     .select("id, title, author")
     .or("cover_url.is.null,cover_url.eq.")
-    .order("title")
-    .range(offset, offset + limit - 1);
+    .order("title");
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -33,13 +45,15 @@ Deno.serve(async (req) => {
     });
   }
 
-  const results: { id: string; title: string; status: string; cover_url?: string }[] = [];
+  const results: any[] = [];
 
   for (const book of books || []) {
     try {
-      const searchQuery = encodeURIComponent(`${book.title} ${book.author}`);
+      // Use mapped English title if available
+      const searchTerm = TITLE_MAP[book.title] || `${book.title} ${book.author}`;
+      const searchQuery = encodeURIComponent(searchTerm);
       const searchRes = await fetch(
-        `https://openlibrary.org/search.json?q=${searchQuery}&limit=3&fields=key,cover_i,title,author_name`
+        `https://openlibrary.org/search.json?q=${searchQuery}&limit=5&fields=key,cover_i,title,author_name`
       );
       const searchData = await searchRes.json();
 
@@ -55,42 +69,19 @@ Deno.serve(async (req) => {
 
       if (coverId) {
         const coverUrl = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
-        const { error: updateError } = await supabase
-          .from("books")
-          .update({ cover_url: coverUrl })
-          .eq("id", book.id);
-
-        results.push({
-          id: book.id,
-          title: book.title,
-          status: updateError ? "error" : "found",
-          cover_url: coverUrl,
-        });
+        await supabase.from("books").update({ cover_url: coverUrl }).eq("id", book.id);
+        results.push({ title: book.title, status: "found", cover_url: coverUrl });
       } else {
-        results.push({ id: book.id, title: book.title, status: "not_found" });
+        results.push({ title: book.title, status: "not_found", searchTerm });
       }
 
-      await new Promise((r) => setTimeout(r, 150));
+      await new Promise((r) => setTimeout(r, 200));
     } catch (e) {
-      results.push({ id: book.id, title: book.title, status: "error" });
+      results.push({ title: book.title, status: "error" });
     }
   }
 
-  // Count remaining
-  const { count } = await supabase
-    .from("books")
-    .select("id", { count: "exact", head: true })
-    .or("cover_url.is.null,cover_url.eq.");
-
-  const found = results.filter((r) => r.status === "found").length;
-
-  return new Response(
-    JSON.stringify({
-      processed: results.length,
-      found,
-      remaining: count ?? 0,
-      results,
-    }),
-    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ results }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 });
