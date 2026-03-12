@@ -6,6 +6,7 @@ import { deleteBook, updateBook } from "@/lib/api";
 import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal } from "lucide-react";
 import MassImportTool from "@/components/admin/MassImportTool";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Table,
