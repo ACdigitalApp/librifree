@@ -3,13 +3,13 @@ import { useParams, Link } from "react-router-dom";
 import { useBook } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Loader2, Sparkles, BookOpen } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, BookOpen, Users, Quote, Layers, List, BookMarked, Clock } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 
-type ContentType = "characters" | "quotes" | "analysis" | "chapters" | "themes";
+type ContentType = "characters" | "quotes" | "analysis" | "chapters" | "themes" | "historical_context";
 
 interface SEOContentPageProps {
   type: ContentType;
@@ -128,21 +128,39 @@ const SEOContentPage = ({ type, titleKey, seoPrefix, urlPrefix }: SEOContentPage
             </div>
           )}
 
+          {/* Cross-links to other SEO pages */}
+          <div className="mt-10 border-t border-border pt-8">
+            <h2 className="text-sm font-semibold mb-3">{t("exploreMore")}</h2>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { to: `/libri/${book.slug}`, label: t("readFullBook"), icon: BookOpen },
+                { to: `/riassunto/${book.slug}`, label: t("readSummary"), icon: BookMarked },
+                { to: `/personaggi/${book.slug}`, label: t("characters"), icon: Users },
+                { to: `/citazioni/${book.slug}`, label: t("quotes"), icon: Quote },
+                { to: `/analisi/${book.slug}`, label: t("analysis"), icon: Layers },
+                { to: `/capitoli/${book.slug}`, label: t("chapters"), icon: List },
+                { to: `/temi/${book.slug}`, label: t("themes"), icon: Layers },
+                { to: `/contesto-storico/${book.slug}`, label: t("historicalContext"), icon: Clock },
+              ]
+                .filter(({ to }) => !to.includes(`/${urlPrefix}/`))
+                .map(({ to, label, icon: Icon }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
+                  >
+                    <Icon className="w-3 h-3" />
+                    {label}
+                  </Link>
+                ))}
+            </div>
+          </div>
+
           {/* Monetization */}
-          <div className="mt-12 space-y-6">
+          <div className="mt-8 space-y-6">
             <AdBanner slot={`seo-${type}`} />
             <AffiliateBookLink title={book.title} author={book.author} />
             <SEORecommendations categoryId={book.category_id} slug={book.slug} />
-          </div>
-
-          <div className="mt-10 text-center border-t border-border pt-8">
-            <Link
-              to={`/libri/${book.slug}`}
-              className="inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-border"
-            >
-              <BookOpen className="w-4 h-4" />
-              {t("readFullBook")}
-            </Link>
           </div>
         </article>
       </div>
@@ -170,6 +188,14 @@ export const AnalysisPage = () => (
 
 export const ChaptersPage = () => (
   <SEOContentPage type="chapters" titleKey="chaptersOf" seoPrefix="Guida ai capitoli di" urlPrefix="capitoli" />
+);
+
+export const ThemesPage = () => (
+  <SEOContentPage type="themes" titleKey="themesOf" seoPrefix="Temi e motivi di" urlPrefix="temi" />
+);
+
+export const HistoricalContextPage = () => (
+  <SEOContentPage type="historical_context" titleKey="historicalContextOf" seoPrefix="Contesto storico di" urlPrefix="contesto-storico" />
 );
 
 export default SEOContentPage;

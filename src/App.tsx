@@ -16,15 +16,45 @@ import Library from "./pages/Library.tsx";
 const BookPage = lazy(() => import("./pages/BookPage.tsx"));
 const SummaryPage = lazy(() => import("./pages/SummaryPage.tsx"));
 const AuthorPage = lazy(() => import("./pages/AuthorPage.tsx"));
-const SEOContentPage = lazy(() => import("./pages/SEOContentPage.tsx"));
+const CategoryPage = lazy(() => import("./pages/CategoryPage.tsx"));
+const TagPage = lazy(() => import("./pages/TagPage.tsx"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin.tsx"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
+// SEO content pages
+// SEO content page lazy imports
+const CharactersPage = lazy(() =>
+  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.CharactersPage }))
+);
+const QuotesPage = lazy(() =>
+  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.QuotesPage }))
+);
+const AnalysisPage = lazy(() =>
+  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.AnalysisPage }))
+);
+const ChaptersPage = lazy(() =>
+  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.ChaptersPage }))
+);
+const ThemesPage = lazy(() =>
+  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.ThemesPage }))
+);
+const HistoricalContextPage = lazy(() =>
+  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.HistoricalContextPage }))
+);
+
+// Alphabetical index pages
+const BooksAlphabeticalPage = lazy(() =>
+  import("./pages/AlphabeticalPages.tsx").then((m) => ({ default: m.BooksAlphabeticalPage }))
+);
+const AuthorsAlphabeticalPage = lazy(() =>
+  import("./pages/AlphabeticalPages.tsx").then((m) => ({ default: m.AuthorsAlphabeticalPage }))
+);
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 min cache
+      staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: false,
     },
@@ -39,20 +69,6 @@ function PageLoader() {
   );
 }
 
-// Lazy wrappers for named exports
-const CharactersPage = lazy(() =>
-  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.CharactersPage }))
-);
-const QuotesPage = lazy(() =>
-  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.QuotesPage }))
-);
-const AnalysisPage = lazy(() =>
-  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.AnalysisPage }))
-);
-const ChaptersPage = lazy(() =>
-  import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.ChaptersPage }))
-);
-
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -63,18 +79,41 @@ const App = () => (
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>
+                {/* Core pages */}
                 <Route path="/" element={<Index />} />
                 <Route path="/biblioteca" element={<Library />} />
+
+                {/* Book pages */}
                 <Route path="/libri/:slug" element={<BookPage />} />
                 <Route path="/libro/:slug" element={<BookPage />} />
+
+                {/* SEO content pages (per book) */}
                 <Route path="/riassunto/:slug" element={<SummaryPage />} />
                 <Route path="/personaggi/:slug" element={<CharactersPage />} />
                 <Route path="/citazioni/:slug" element={<QuotesPage />} />
                 <Route path="/analisi/:slug" element={<AnalysisPage />} />
                 <Route path="/capitoli/:slug" element={<ChaptersPage />} />
+                <Route path="/temi/:slug" element={<ThemesPage />} />
+                <Route path="/contesto-storico/:slug" element={<HistoricalContextPage />} />
+
+                {/* Author pages */}
+                <Route path="/autore/:name" element={<AuthorPage />} />
                 <Route path="/author/:name" element={<AuthorPage />} />
+
+                {/* Category pages */}
+                <Route path="/categoria/:slug" element={<CategoryPage />} />
+
+                {/* Tag pages */}
+                <Route path="/tag/:slug" element={<TagPage />} />
+
+                {/* Alphabetical indexes */}
+                <Route path="/libri-:letter" element={<BooksAlphabeticalPage />} />
+                <Route path="/autori-:letter" element={<AuthorsAlphabeticalPage />} />
+
+                {/* Admin */}
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<AdminPanel />} />
+
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

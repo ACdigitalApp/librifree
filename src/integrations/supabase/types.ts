@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      book_tags: {
+        Row: {
+          book_id: string
+          tag_id: string
+        }
+        Insert: {
+          book_id: string
+          tag_id: string
+        }
+        Update: {
+          book_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_tags_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       books: {
         Row: {
           author: string
@@ -25,6 +55,7 @@ export type Database = {
           created_at: string
           description: string | null
           file_url: string | null
+          historical_context: string | null
           id: string
           language: string
           quotes: string | null
@@ -49,6 +80,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           file_url?: string | null
+          historical_context?: string | null
           id?: string
           language?: string
           quotes?: string | null
@@ -73,6 +105,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           file_url?: string | null
+          historical_context?: string | null
           id?: string
           language?: string
           quotes?: string | null
@@ -118,6 +151,30 @@ export type Database = {
         }
         Relationships: []
       }
+      tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          type?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -141,6 +198,58 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_authors_by_letter: {
+        Args: { first_letter: string }
+        Returns: {
+          author: string
+          book_count: number
+        }[]
+      }
+      get_books_by_author: {
+        Args: { author_slug: string }
+        Returns: {
+          author: string
+          category_id: string | null
+          chapters: string | null
+          characters: string | null
+          content: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          file_url: string | null
+          historical_context: string | null
+          id: string
+          language: string
+          quotes: string | null
+          search_vector: unknown
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          source: string | null
+          summary: string | null
+          themes: string | null
+          title: string
+          updated_at: string
+          views: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "books"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_books_by_letter: {
+        Args: { first_letter: string }
+        Returns: {
+          author: string
+          cover_url: string
+          id: string
+          slug: string
+          title: string
+          views: number
+        }[]
+      }
       get_categories_with_count: {
         Args: never
         Returns: {

@@ -4,7 +4,7 @@ import { useBook } from "@/hooks/useBooks";
 import { incrementBookViews } from "@/lib/api";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers } from "lucide-react";
+import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers, Clock } from "lucide-react";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 import { Helmet } from "react-helmet-async";
@@ -92,6 +92,8 @@ const BookPage = () => {
     { to: `/citazioni/${book.slug}`, label: t("quotes"), icon: Quote },
     { to: `/analisi/${book.slug}`, label: t("analysis"), icon: Layers },
     { to: `/capitoli/${book.slug}`, label: t("chapters"), icon: List },
+    { to: `/temi/${book.slug}`, label: t("themes"), icon: Layers },
+    { to: `/contesto-storico/${book.slug}`, label: t("historicalContext"), icon: Clock },
   ];
 
   return (
