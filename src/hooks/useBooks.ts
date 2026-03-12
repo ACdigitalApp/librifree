@@ -1,5 +1,12 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { fetchBooks, fetchBookBySlug, fetchCategories } from "@/lib/api";
+import {
+  fetchBooks,
+  fetchBookBySlug,
+  fetchCategories,
+  fetchRecentBooks,
+  fetchPopularBooks,
+  fetchCategoriesWithCount,
+} from "@/lib/api";
 
 export function useBooks({
   search = "",
@@ -32,5 +39,26 @@ export function useCategories() {
   return useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
+  });
+}
+
+export function useRecentBooks(limit = 12) {
+  return useQuery({
+    queryKey: ["recent-books", limit],
+    queryFn: () => fetchRecentBooks(limit),
+  });
+}
+
+export function usePopularBooks(limit = 12) {
+  return useQuery({
+    queryKey: ["popular-books", limit],
+    queryFn: () => fetchPopularBooks(limit),
+  });
+}
+
+export function useCategoriesWithCount() {
+  return useQuery({
+    queryKey: ["categories-with-count"],
+    queryFn: fetchCategoriesWithCount,
   });
 }

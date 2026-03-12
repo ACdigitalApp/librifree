@@ -3,8 +3,8 @@ export type Locale = "it" | "en";
 export const translations = {
   it: {
     heroTitle: "Librifree – Biblioteca Digitale Gratuita",
-    heroSubtitle: "Leggi gratuitamente centinaia di libri classici online.",
-    enterLibrary: "Entra nella Libreria",
+    heroSubtitle: "Leggi gratuitamente migliaia di libri classici online.",
+    enterLibrary: "Esplora il Catalogo",
     library: "Biblioteca",
     librarySubtitle: "Scegli un libro e inizia a leggere.",
     home: "Home",
@@ -31,11 +31,17 @@ export const translations = {
     by: "di",
     download: "Scarica",
     source: "Fonte",
+    popularBooks: "Libri popolari",
+    recentBooks: "Aggiunti di recente",
+    mainCategories: "Categorie principali",
+    viewAll: "Vedi tutti",
+    booksCount: "libri",
+    exploreCategory: "Esplora",
   },
   en: {
     heroTitle: "Librifree – Free Digital Library",
-    heroSubtitle: "Read hundreds of classic books online for free.",
-    enterLibrary: "Enter Library",
+    heroSubtitle: "Read thousands of classic books online for free.",
+    enterLibrary: "Explore Catalog",
     library: "Library",
     librarySubtitle: "Choose a book and start reading.",
     home: "Home",
@@ -62,6 +68,12 @@ export const translations = {
     by: "by",
     download: "Download",
     source: "Source",
+    popularBooks: "Popular books",
+    recentBooks: "Recently added",
+    mainCategories: "Main categories",
+    viewAll: "View all",
+    booksCount: "books",
+    exploreCategory: "Explore",
   },
 } as const;
 
