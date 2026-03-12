@@ -138,6 +138,10 @@ const AdminPanel = () => {
               {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               Fetch Covers
             </Button>
+            <Button size="sm" variant="outline" onClick={handleGenerateAICovers} disabled={importLoading}>
+              {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+              Generate AI Covers
+            </Button>
           </div>
         </div>
 
