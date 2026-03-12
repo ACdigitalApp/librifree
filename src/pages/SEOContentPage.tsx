@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 
-type ContentType = "characters" | "quotes" | "analysis" | "chapters" | "themes";
+type ContentType = "characters" | "quotes" | "analysis" | "chapters" | "themes" | "historical_context";
 
 interface SEOContentPageProps {
   type: ContentType;
