@@ -15,13 +15,13 @@ export async function fetchBooks({
   search = "",
   categorySlug = "",
   language = "",
-  sortBy = "title",
+  sortBy = "author",
 }: {
   page?: number;
   search?: string;
   categorySlug?: string;
   language?: string;
-  sortBy?: "title" | "views" | "created_at";
+  sortBy?: "title" | "author" | "views" | "created_at";
 } = {}) {
   // Only select listing columns (exclude heavy content/summary fields)
   let query = supabase
@@ -47,7 +47,7 @@ export async function fetchBooks({
     query = query.eq("language", language);
   }
 
-  const ascending = sortBy === "title";
+  const ascending = sortBy === "title" || sortBy === "author";
   query = query
     .order(sortBy, { ascending })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
