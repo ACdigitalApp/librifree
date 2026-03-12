@@ -11,6 +11,8 @@ import BookPage from "./pages/BookPage.tsx";
 import SummaryPage from "./pages/SummaryPage.tsx";
 import AuthorPage from "./pages/AuthorPage.tsx";
 import { CharactersPage, QuotesPage, AnalysisPage, ChaptersPage } from "./pages/SEOContentPage.tsx";
+import AdminLogin from "./pages/AdminLogin.tsx";
+import AdminPanel from "./pages/AdminPanel.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
               <Route path="/analisi/:slug" element={<AnalysisPage />} />
               <Route path="/capitoli/:slug" element={<ChaptersPage />} />
               <Route path="/author/:name" element={<AuthorPage />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminPanel />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

@@ -6,21 +6,26 @@ import {
   fetchRecentBooks,
   fetchPopularBooks,
   fetchCategoriesWithCount,
+  fetchAdminStats,
+  fetchAdminBooks,
+  checkIsAdmin,
 } from "@/lib/api";
 
 export function useBooks({
   search = "",
   categorySlug = "",
   language = "",
+  sortBy = "title" as "title" | "views" | "created_at",
 }: {
   search?: string;
   categorySlug?: string;
   language?: string;
+  sortBy?: "title" | "views" | "created_at";
 } = {}) {
   return useInfiniteQuery({
-    queryKey: ["books", search, categorySlug, language],
+    queryKey: ["books", search, categorySlug, language, sortBy],
     queryFn: ({ pageParam = 0 }) =>
-      fetchBooks({ page: pageParam, search, categorySlug, language }),
+      fetchBooks({ page: pageParam, search, categorySlug, language, sortBy }),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.hasMore ? allPages.length : undefined,
     initialPageParam: 0,
@@ -60,5 +65,26 @@ export function useCategoriesWithCount() {
   return useQuery({
     queryKey: ["categories-with-count"],
     queryFn: fetchCategoriesWithCount,
+  });
+}
+
+export function useAdminStats() {
+  return useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: fetchAdminStats,
+  });
+}
+
+export function useAdminBooks(opts: { page?: number; search?: string; sortBy?: string } = {}) {
+  return useQuery({
+    queryKey: ["admin-books", opts],
+    queryFn: () => fetchAdminBooks(opts),
+  });
+}
+
+export function useIsAdmin() {
+  return useQuery({
+    queryKey: ["is-admin"],
+    queryFn: checkIsAdmin,
   });
 }
