@@ -18,6 +18,8 @@ export type Database = {
         Row: {
           author: string
           category_id: string | null
+          chapters: string | null
+          characters: string | null
           content: string | null
           cover_url: string | null
           created_at: string
@@ -25,18 +27,22 @@ export type Database = {
           file_url: string | null
           id: string
           language: string
+          quotes: string | null
           search_vector: unknown
           seo_description: string | null
           seo_title: string | null
           slug: string
           source: string | null
           summary: string | null
+          themes: string | null
           title: string
           updated_at: string
         }
         Insert: {
           author: string
           category_id?: string | null
+          chapters?: string | null
+          characters?: string | null
           content?: string | null
           cover_url?: string | null
           created_at?: string
@@ -44,18 +50,22 @@ export type Database = {
           file_url?: string | null
           id?: string
           language?: string
+          quotes?: string | null
           search_vector?: unknown
           seo_description?: string | null
           seo_title?: string | null
           slug: string
           source?: string | null
           summary?: string | null
+          themes?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           author?: string
           category_id?: string | null
+          chapters?: string | null
+          characters?: string | null
           content?: string | null
           cover_url?: string | null
           created_at?: string
@@ -63,12 +73,14 @@ export type Database = {
           file_url?: string | null
           id?: string
           language?: string
+          quotes?: string | null
           search_vector?: unknown
           seo_description?: string | null
           seo_title?: string | null
           slug?: string
           source?: string | null
           summary?: string | null
+          themes?: string | null
           title?: string
           updated_at?: string
         }
