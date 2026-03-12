@@ -123,6 +123,69 @@ const AdminPanel = () => {
     }
   };
 
+  const handleFindDuplicates = async () => {
+    setFindingDuplicates(true);
+    setDuplicates([]);
+    try {
+      const { data: allBooks, error } = await supabase
+        .from("books")
+        .select("id, title, author, slug, content, views")
+        .order("title");
+      if (error) throw error;
+      if (!allBooks) return;
+
+      const found: Array<{ keep: any; remove: any[]; reason: string }> = [];
+      const processed = new Set<string>();
+
+      for (let i = 0; i < allBooks.length; i++) {
+        if (processed.has(allBooks[i].id)) continue;
+        const dupes: any[] = [];
+        for (let j = i + 1; j < allBooks.length; j++) {
+          if (processed.has(allBooks[j].id)) continue;
+          const sameTitle = allBooks[i].title.toLowerCase().trim() === allBooks[j].title.toLowerCase().trim();
+          const sameAuthor = allBooks[i].author.toLowerCase().trim() === allBooks[j].author.toLowerCase().trim();
+          if (sameTitle && sameAuthor) {
+            dupes.push(allBooks[j]);
+            processed.add(allBooks[j].id);
+          }
+        }
+        if (dupes.length > 0) {
+          const all = [allBooks[i], ...dupes];
+          all.sort((a, b) => (b.views ?? 0) - (a.views ?? 0) || (b.content?.length ?? 0) - (a.content?.length ?? 0));
+          found.push({
+            keep: all[0],
+            remove: all.slice(1),
+            reason: `${all.length} copie — si tiene quella con più views (${all[0].views})`,
+          });
+          processed.add(allBooks[i].id);
+        }
+      }
+
+      setDuplicates(found);
+      toast({ title: `Trovati ${found.length} gruppi di libri doppi` });
+    } catch {
+      toast({ title: "Errore nella ricerca duplicati", variant: "destructive" });
+    } finally {
+      setFindingDuplicates(false);
+    }
+  };
+
+  const handleDeleteDuplicates = async () => {
+    const toRemove = duplicates.flatMap((d) => d.remove);
+    if (!confirm(`Eliminare ${toRemove.length} libri doppi?`)) return;
+    try {
+      for (const book of toRemove) {
+        await deleteBook(book.id);
+      }
+      toast({ title: `${toRemove.length} libri doppi eliminati` });
+      setDuplicates([]);
+      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+    } catch {
+      toast({ title: "Errore nell'eliminazione", variant: "destructive" });
+    }
+  };
+
   if (checkingAdmin || isAdmin === undefined) {
     return (
       <div className="min-h-svh flex items-center justify-center">
