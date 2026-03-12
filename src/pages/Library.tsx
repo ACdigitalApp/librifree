@@ -4,6 +4,7 @@ import { useBooks, useCategories } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { Search, Loader2 } from "lucide-react";
+import { AdBanner } from "@/components/Monetization";
 import { Input } from "@/components/ui/input";
 import {
   Select,
