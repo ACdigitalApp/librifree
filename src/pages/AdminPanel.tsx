@@ -44,6 +44,9 @@ const AdminPanel = () => {
   const [command, setCommand] = useState("");
   const [commandResult, setCommandResult] = useState("");
   const [adminSortBy, setAdminSortBy] = useState("views");
+  const [adminPageSize, setAdminPageSize] = useState(25);
+  const [findingDuplicates, setFindingDuplicates] = useState(false);
+  const [duplicates, setDuplicates] = useState<Array<{ keep: any; remove: any[]; reason: string }>>([]);
 
   const { data: stats, isLoading: loadingStats } = useAdminStats();
   const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: adminSortBy });
