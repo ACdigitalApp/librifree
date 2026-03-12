@@ -181,10 +181,11 @@ const AdminPanel = () => {
           </div>
           <div className="border-t border-border pt-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Terminal className="h-4 w-4" /> Comando
+              <Terminal className="h-4 w-4" /> Istruzioni Copertine
             </h3>
             <Textarea
-              placeholder="Scrivi un comando o una nota..."
+              placeholder="Es: Non usare le stesse cover per gli elenchi, usa stili diversi per genere..."
+
               value={command}
               onChange={(e) => setCommand(e.target.value)}
               className="min-h-[80px] text-sm mb-3"
