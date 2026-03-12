@@ -26,7 +26,11 @@ export type Database = {
           id: string
           language: string
           search_vector: unknown
+          seo_description: string | null
+          seo_title: string | null
           slug: string
+          source: string | null
+          summary: string | null
           title: string
           updated_at: string
         }
@@ -41,7 +45,11 @@ export type Database = {
           id?: string
           language?: string
           search_vector?: unknown
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
+          source?: string | null
+          summary?: string | null
           title: string
           updated_at?: string
         }
@@ -56,7 +64,11 @@ export type Database = {
           id?: string
           language?: string
           search_vector?: unknown
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
+          source?: string | null
+          summary?: string | null
           title?: string
           updated_at?: string
         }
