@@ -124,6 +124,14 @@ export const translations = {
     buyPhysicalBookDesc: "Support authors by purchasing the print edition.",
     buyOnAmazon: "Search on Amazon",
     recommendedBooks: "Recommended books",
+    eduSection: "School Section",
+    eduOptimized: "Optimized for school research.",
+    schoolSummary: "School summary",
+    schoolAnalysis: "School analysis",
+    charactersExplained: "Characters explained",
+    schoolSummaryOf: "School summary of",
+    schoolAnalysisOf: "School analysis of",
+    charactersExplainedOf: "Characters explained of",
   },
 } as const;
 

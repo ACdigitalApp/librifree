@@ -117,6 +117,11 @@ const App = () => (
                 {/* Tag pages */}
                 <Route path="/tag/:slug" element={<TagPage />} />
 
+                {/* Education pages */}
+                <Route path="/riassunto-scuola/:slug" element={<SchoolSummaryPage />} />
+                <Route path="/analisi-scolastica/:slug" element={<SchoolAnalysisPage />} />
+                <Route path="/personaggi-spiegati/:slug" element={<CharactersExplainedPage />} />
+
                 {/* Alphabetical indexes */}
                 <Route path="/libri-:letter" element={<BooksAlphabeticalPage />} />
                 <Route path="/autori-:letter" element={<AuthorsAlphabeticalPage />} />

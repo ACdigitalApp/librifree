@@ -192,7 +192,7 @@ const MassImportTool = () => {
           <Input
             type="number"
             min={1}
-            max={500}
+            max={1000}
             value={totalPages}
             onChange={(e) => setTotalPages(Number(e.target.value))}
             disabled={running}
