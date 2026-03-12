@@ -193,26 +193,14 @@ const AdminPanel = () => {
               onChange={(e) => setCommand(e.target.value)}
               className="min-h-[80px] text-sm mb-3"
             />
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={() => {
-                  setCommandResult(`Comando eseguito: "${command}"`);
-                  toast({ title: "Comando inviato", description: command });
-                }}
-                disabled={!command.trim()}
-              >
-                Esegui
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => { setCommand(""); setCommandResult(""); }}>
+            <p className="text-xs text-muted-foreground">
+              Queste istruzioni vengono inviate automaticamente quando clicchi "Generate AI Covers".
+            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <Button size="sm" variant="outline" onClick={() => setCommand("")} disabled={!command.trim()}>
                 Pulisci
               </Button>
             </div>
-            {commandResult && (
-              <pre className="mt-3 text-xs bg-secondary rounded-lg p-3 whitespace-pre-wrap text-muted-foreground">
-                {commandResult}
-              </pre>
-            )}
           </div>
         </div>
 
