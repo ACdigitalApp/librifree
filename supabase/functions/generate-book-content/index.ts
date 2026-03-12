@@ -65,6 +65,27 @@ Structure:
 <p>Different scholarly perspectives.</p>
 
 Be thorough, academic, and insightful. Each section 2-3 paragraphs.`,
+
+  historical_context: (title, author, lang) =>
+    `You are a literary historian. Write a comprehensive historical context guide for "${title}" by ${author}.
+Write in ${lang}. Output valid HTML only (no markdown).
+Structure:
+<h2>${lang === "Italian" ? "Contesto Storico" : "Historical Context"}</h2>
+<p>The historical period when the work was written and/or set.</p>
+
+<h2>${lang === "Italian" ? "Contesto Sociale e Culturale" : "Social and Cultural Context"}</h2>
+<p>Social conditions, cultural movements, and intellectual climate.</p>
+
+<h2>${lang === "Italian" ? "L'Autore nel suo Tempo" : "The Author in Their Time"}</h2>
+<p>The author's life circumstances and how they influenced the work.</p>
+
+<h2>${lang === "Italian" ? "Riferimenti Storici nell'Opera" : "Historical References in the Work"}</h2>
+<p>Specific historical events, figures, or places referenced.</p>
+
+<h2>${lang === "Italian" ? "Impatto Storico dell'Opera" : "Historical Impact of the Work"}</h2>
+<p>How the work influenced its era and subsequent history.</p>
+
+Be thorough and scholarly. Each section 2-3 paragraphs.`,
 };
 
 Deno.serve(async (req) => {
