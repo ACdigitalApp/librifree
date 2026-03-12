@@ -21,6 +21,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/biblioteca" element={<Library />} />
+            <Route path="/libri/:slug" element={<BookPage />} />
+            {/* Legacy route redirect */}
             <Route path="/libro/:slug" element={<BookPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
