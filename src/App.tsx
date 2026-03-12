@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/i18n/LanguageContext";
 import Index from "./pages/Index.tsx";
 import Library from "./pages/Library.tsx";
 import BookPage from "./pages/BookPage.tsx";
+import SummaryPage from "./pages/SummaryPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
               <Route path="/biblioteca" element={<Library />} />
               <Route path="/libri/:slug" element={<BookPage />} />
               <Route path="/libro/:slug" element={<BookPage />} />
+              <Route path="/riassunto/:slug" element={<SummaryPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

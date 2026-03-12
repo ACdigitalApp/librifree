@@ -176,6 +176,24 @@ const BookPage = () => {
                 {book.description}
               </p>
             )}
+            <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+              <Link
+                to={`/riassunto/${book.slug}`}
+                className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
+              >
+                {t("readSummary")}
+              </Link>
+              {book.file_url && (
+                <a
+                  href={book.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
+                >
+                  {t("download")}
+                </a>
+              )}
+            </div>
           </header>
 
           {processedContent && (
