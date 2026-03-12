@@ -25,6 +25,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const body = await req.json().catch(() => ({}));
     const batchSize = body.batch_size || 5;
+    const coverInstructions = body.cover_instructions || "";
 
     // Find books with 'no-cover' marker (Google Books didn't find them)
     const { data: books, error, count } = await supabase
@@ -51,6 +52,7 @@ The cover should be artistic and literary, with a classic book design aesthetic.
 Include the title "${book.title}" prominently and the author name "${book.author}" below it.
 Use rich colors, elegant typography, and imagery that evokes the book's themes.
 The style should be reminiscent of high-quality Italian literary publishing.
+${coverInstructions ? `\nAdditional instructions: ${coverInstructions}` : ""}
 On a clean background suitable for a book cover.`;
 
         const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

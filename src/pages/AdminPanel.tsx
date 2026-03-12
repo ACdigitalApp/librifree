@@ -44,9 +44,12 @@ const AdminPanel = () => {
   const [command, setCommand] = useState("");
   const [commandResult, setCommandResult] = useState("");
   const [adminSortBy, setAdminSortBy] = useState("views");
+  const [adminPageSize, setAdminPageSize] = useState(25);
+  const [findingDuplicates, setFindingDuplicates] = useState(false);
+  const [duplicates, setDuplicates] = useState<Array<{ keep: any; remove: any[]; reason: string }>>([]);
 
   const { data: stats, isLoading: loadingStats } = useAdminStats();
-  const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: adminSortBy });
+  const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: adminSortBy, pageSize: adminPageSize });
 
   useEffect(() => {
     if (!checkingAdmin && isAdmin === false) {
@@ -102,7 +105,7 @@ const AdminPanel = () => {
     try {
       while (rounds < 20) {
         const { data, error } = await supabase.functions.invoke("generate-ai-covers", {
-          body: { batch_size: 2 },
+          body: { batch_size: 2, cover_instructions: command.trim() || undefined },
         });
         if (error) throw error;
         totalGenerated += data.generated || 0;
@@ -117,6 +120,69 @@ const AdminPanel = () => {
       toast({ title: `Copertine AI: ${totalGenerated} generate prima dell'errore`, variant: "destructive" });
     } finally {
       setImportLoading(false);
+    }
+  };
+
+  const handleFindDuplicates = async () => {
+    setFindingDuplicates(true);
+    setDuplicates([]);
+    try {
+      const { data: allBooks, error } = await supabase
+        .from("books")
+        .select("id, title, author, slug, content, views")
+        .order("title");
+      if (error) throw error;
+      if (!allBooks) return;
+
+      const found: Array<{ keep: any; remove: any[]; reason: string }> = [];
+      const processed = new Set<string>();
+
+      for (let i = 0; i < allBooks.length; i++) {
+        if (processed.has(allBooks[i].id)) continue;
+        const dupes: any[] = [];
+        for (let j = i + 1; j < allBooks.length; j++) {
+          if (processed.has(allBooks[j].id)) continue;
+          const sameTitle = allBooks[i].title.toLowerCase().trim() === allBooks[j].title.toLowerCase().trim();
+          const sameAuthor = allBooks[i].author.toLowerCase().trim() === allBooks[j].author.toLowerCase().trim();
+          if (sameTitle && sameAuthor) {
+            dupes.push(allBooks[j]);
+            processed.add(allBooks[j].id);
+          }
+        }
+        if (dupes.length > 0) {
+          const all = [allBooks[i], ...dupes];
+          all.sort((a, b) => (b.views ?? 0) - (a.views ?? 0) || (b.content?.length ?? 0) - (a.content?.length ?? 0));
+          found.push({
+            keep: all[0],
+            remove: all.slice(1),
+            reason: `${all.length} copie — si tiene quella con più views (${all[0].views})`,
+          });
+          processed.add(allBooks[i].id);
+        }
+      }
+
+      setDuplicates(found);
+      toast({ title: `Trovati ${found.length} gruppi di libri doppi` });
+    } catch {
+      toast({ title: "Errore nella ricerca duplicati", variant: "destructive" });
+    } finally {
+      setFindingDuplicates(false);
+    }
+  };
+
+  const handleDeleteDuplicates = async () => {
+    const toRemove = duplicates.flatMap((d) => d.remove);
+    if (!confirm(`Eliminare ${toRemove.length} libri doppi?`)) return;
+    try {
+      for (const book of toRemove) {
+        await deleteBook(book.id);
+      }
+      toast({ title: `${toRemove.length} libri doppi eliminati` });
+      setDuplicates([]);
+      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+    } catch {
+      toast({ title: "Errore nell'eliminazione", variant: "destructive" });
     }
   };
 
@@ -178,6 +244,10 @@ const AdminPanel = () => {
               {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               Generate AI Covers
             </Button>
+            <Button size="sm" variant="outline" onClick={handleFindDuplicates} disabled={findingDuplicates}>
+              {findingDuplicates && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+              Trova Libri Doppi
+            </Button>
           </div>
           <div className="border-t border-border pt-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
@@ -190,28 +260,41 @@ const AdminPanel = () => {
               onChange={(e) => setCommand(e.target.value)}
               className="min-h-[80px] text-sm mb-3"
             />
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={() => {
-                  setCommandResult(`Comando eseguito: "${command}"`);
-                  toast({ title: "Comando inviato", description: command });
-                }}
-                disabled={!command.trim()}
-              >
-                Esegui
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => { setCommand(""); setCommandResult(""); }}>
+            <p className="text-xs text-muted-foreground">
+              Queste istruzioni vengono inviate automaticamente quando clicchi "Generate AI Covers".
+            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <Button size="sm" variant="outline" onClick={() => setCommand("")} disabled={!command.trim()}>
                 Pulisci
               </Button>
             </div>
-            {commandResult && (
-              <pre className="mt-3 text-xs bg-secondary rounded-lg p-3 whitespace-pre-wrap text-muted-foreground">
-                {commandResult}
-              </pre>
-            )}
           </div>
         </div>
+
+        {/* Duplicates Results */}
+        {duplicates.length > 0 && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold">
+                {duplicates.length} gruppi di libri doppi trovati ({duplicates.reduce((s, d) => s + d.remove.length, 0)} da eliminare)
+              </h3>
+              <Button size="sm" variant="destructive" onClick={handleDeleteDuplicates}>
+                <Trash2 className="h-3 w-3 mr-1" /> Elimina tutti i doppi
+              </Button>
+            </div>
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {duplicates.map((group, i) => (
+                <div key={i} className="rounded-lg border border-border bg-background p-3 text-sm">
+                  <p className="font-medium">✅ Tenere: {group.keep.title} — {group.keep.author} ({group.keep.views} views)</p>
+                  {group.remove.map((r: any) => (
+                    <p key={r.id} className="text-destructive ml-4">❌ Eliminare: {r.title} — {r.author} ({r.views} views)</p>
+                  ))}
+                  <p className="text-xs text-muted-foreground mt-1">{group.reason}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Book List */}
         <div className="mb-4 flex items-center gap-3 flex-wrap">
@@ -235,6 +318,17 @@ const AdminPanel = () => {
               <SelectItem value="title_desc">Titolo Z-A</SelectItem>
               <SelectItem value="views">Più visti</SelectItem>
               <SelectItem value="created_at">Più recenti</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={String(adminPageSize)} onValueChange={(v) => { setAdminPageSize(v === "all" ? 9999 : Number(v)); setPage(0); }}>
+            <SelectTrigger className="w-[100px] h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+              <SelectItem value="all">Tutti</SelectItem>
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
