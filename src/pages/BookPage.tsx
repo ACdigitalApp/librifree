@@ -92,6 +92,8 @@ const BookPage = () => {
     { to: `/citazioni/${book.slug}`, label: t("quotes"), icon: Quote },
     { to: `/analisi/${book.slug}`, label: t("analysis"), icon: Layers },
     { to: `/capitoli/${book.slug}`, label: t("chapters"), icon: List },
+    { to: `/temi/${book.slug}`, label: t("themes"), icon: Layers },
+    { to: `/contesto-storico/${book.slug}`, label: t("historicalContext"), icon: Clock },
   ];
 
   return (
