@@ -115,25 +115,18 @@ const AdminPanel = () => {
           </div>
         </div>
 
-        {/* Import Tools */}
+        {/* Mass Import Tool */}
+        <MassImportTool />
+
+        {/* Quick Tools */}
         <div className="rounded-xl border border-border p-5 mb-8">
-          <h2 className="text-sm font-semibold mb-3">Import & Tools</h2>
+          <h2 className="text-sm font-semibold mb-3">Tools</h2>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => handleImport("it")} disabled={importLoading}>
-              {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
-              <Upload className="h-3 w-3 mr-1" /> Import IT
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => handleImport("en")} disabled={importLoading}>
-              <Upload className="h-3 w-3 mr-1" /> Import EN
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => handleImport("fr")} disabled={importLoading}>
-              <Upload className="h-3 w-3 mr-1" /> Import FR
-            </Button>
             <Button size="sm" variant="outline" onClick={handleFetchCovers} disabled={importLoading}>
+              {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               Fetch Covers
             </Button>
           </div>
-          {importResult && <p className="text-xs text-muted-foreground mt-2">{importResult}</p>}
         </div>
 
         {/* Book List */}
