@@ -47,9 +47,10 @@ export async function fetchBooks({
     query = query.eq("language", language);
   }
 
+  const column = sortBy.replace("_desc", "") as string;
   const ascending = sortBy === "title" || sortBy === "author";
   query = query
-    .order(sortBy, { ascending })
+    .order(column, { ascending })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
   const { data, error, count } = await query;
