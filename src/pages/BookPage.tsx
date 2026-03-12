@@ -5,6 +5,8 @@ import { incrementBookViews } from "@/lib/api";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers } from "lucide-react";
+import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
+import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 import { Helmet } from "react-helmet-async";
 
 type FontSize = "sm" | "md" | "lg" | "xl";
@@ -193,10 +195,23 @@ const BookPage = () => {
           {processedContent && (
             <div className="prose-book" dangerouslySetInnerHTML={{ __html: processedContent }} />
           )}
+
+          {/* Monetization */}
+          <div className="mt-12 space-y-6">
+            <AdBanner slot="book-mid" />
+            <AffiliateBookLink title={book.title} author={book.author} />
+            <BookRecommendations categoryId={book.category_id} slug={book.slug} />
+          </div>
         </article>
       </div>
     </>
   );
 };
+
+function BookRecommendations({ categoryId, slug }: { categoryId: string | null; slug: string }) {
+  const { data: recommended } = useRecommendedBooks(categoryId, slug);
+  if (!recommended?.length) return null;
+  return <RecommendedBooks books={recommended} />;
+}
 
 export default BookPage;

@@ -50,6 +50,10 @@ export const translations = {
     chapters: "Capitoli",
     authorBooks: "Libri dell'autore",
     exploreMore: "Esplora di più",
+    buyPhysicalBook: "Compra il libro cartaceo",
+    buyPhysicalBookDesc: "Supporta gli autori acquistando la versione cartacea.",
+    buyOnAmazon: "Cerca su Amazon",
+    recommendedBooks: "Libri consigliati",
   },
   en: {
     heroTitle: "Librifree – Free Digital Library",
@@ -100,6 +104,10 @@ export const translations = {
     chapters: "Chapters",
     authorBooks: "Books by author",
     exploreMore: "Explore more",
+    buyPhysicalBook: "Buy the physical book",
+    buyPhysicalBookDesc: "Support authors by purchasing the print edition.",
+    buyOnAmazon: "Search on Amazon",
+    recommendedBooks: "Recommended books",
   },
 } as const;
 
