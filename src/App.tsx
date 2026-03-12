@@ -43,6 +43,17 @@ const HistoricalContextPage = lazy(() =>
   import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.HistoricalContextPage }))
 );
 
+// Education pages
+const SchoolSummaryPage = lazy(() =>
+  import("./pages/EducationPage.tsx").then((m) => ({ default: m.SchoolSummaryPage }))
+);
+const SchoolAnalysisPage = lazy(() =>
+  import("./pages/EducationPage.tsx").then((m) => ({ default: m.SchoolAnalysisPage }))
+);
+const CharactersExplainedPage = lazy(() =>
+  import("./pages/EducationPage.tsx").then((m) => ({ default: m.CharactersExplainedPage }))
+);
+
 // Alphabetical index pages
 const BooksAlphabeticalPage = lazy(() =>
   import("./pages/AlphabeticalPages.tsx").then((m) => ({ default: m.BooksAlphabeticalPage }))
