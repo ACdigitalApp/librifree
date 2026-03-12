@@ -21,6 +21,7 @@ const Library = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categorySlug, setCategorySlug] = useState(initialCategory);
+  const [sortBy, setSortBy] = useState<"author" | "title" | "views" | "created_at">("author");
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearch = useCallback((value: string) => {
@@ -36,7 +37,7 @@ const Library = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useBooks({ search: debouncedSearch, categorySlug });
+  } = useBooks({ search: debouncedSearch, categorySlug, sortBy });
 
   const allBooks = data?.pages.flatMap((p) => p.books) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
@@ -86,6 +87,17 @@ const Library = () => {
                   {cat.name}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+            <SelectTrigger className="w-full sm:w-[200px] h-10 text-sm rounded-full border-border bg-secondary">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="author">Autore A-Z</SelectItem>
+              <SelectItem value="title">Titolo A-Z</SelectItem>
+              <SelectItem value="views">Più visti</SelectItem>
+              <SelectItem value="created_at">Più recenti</SelectItem>
             </SelectContent>
           </Select>
         </div>

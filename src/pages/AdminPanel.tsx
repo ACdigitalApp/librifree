@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -36,9 +43,10 @@ const AdminPanel = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [command, setCommand] = useState("");
   const [commandResult, setCommandResult] = useState("");
+  const [adminSortBy, setAdminSortBy] = useState("views");
 
   const { data: stats, isLoading: loadingStats } = useAdminStats();
-  const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: "views" });
+  const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: adminSortBy });
 
   useEffect(() => {
     if (!checkingAdmin && isAdmin === false) {
@@ -207,7 +215,7 @@ const AdminPanel = () => {
         </div>
 
         {/* Book List */}
-        <div className="mb-4 flex items-center gap-3">
+        <div className="mb-4 flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -217,6 +225,17 @@ const AdminPanel = () => {
               className="pl-9 h-9 text-sm"
             />
           </div>
+          <Select value={adminSortBy} onValueChange={(v) => { setAdminSortBy(v); setPage(0); }}>
+            <SelectTrigger className="w-[180px] h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="author">Autore A-Z</SelectItem>
+              <SelectItem value="title">Titolo A-Z</SelectItem>
+              <SelectItem value="views">Più visti</SelectItem>
+              <SelectItem value="created_at">Più recenti</SelectItem>
+            </SelectContent>
+          </Select>
           <p className="text-xs text-muted-foreground">
             {booksData?.totalCount ?? 0} books
           </p>
