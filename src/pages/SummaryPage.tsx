@@ -6,6 +6,8 @@ import { ArrowLeft, Loader2, BookOpen, Sparkles } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
+import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 
 const SummaryPage = () => {
   const { slug } = useParams<{ slug: string }>();
