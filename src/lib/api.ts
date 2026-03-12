@@ -102,21 +102,29 @@ export async function fetchPopularBooks(limit = 12) {
 }
 
 export async function fetchCategoriesWithCount() {
+  // Single query with count per category using a grouped approach
+  const { data: books, error: booksError } = await supabase
+    .from("books")
+    .select("category_id");
+  if (booksError) throw booksError;
+
   const { data: categories, error: catError } = await supabase
     .from("categories")
     .select("*")
     .order("name");
   if (catError) throw catError;
 
-  const results: (Category & { count: number })[] = [];
-  for (const cat of categories ?? []) {
-    const { count } = await supabase
-      .from("books")
-      .select("id", { count: "exact", head: true })
-      .eq("category_id", cat.id);
-    results.push({ ...cat, count: count ?? 0 });
+  // Count in memory instead of N+1 queries
+  const countMap = new Map<string, number>();
+  for (const b of books ?? []) {
+    if (b.category_id) {
+      countMap.set(b.category_id, (countMap.get(b.category_id) ?? 0) + 1);
+    }
   }
-  return results.filter((c) => c.count > 0);
+
+  return (categories ?? [])
+    .map((cat) => ({ ...cat, count: countMap.get(cat.id) ?? 0 }))
+    .filter((c) => c.count > 0);
 }
 
 export async function incrementBookViews(slug: string) {

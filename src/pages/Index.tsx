@@ -69,6 +69,11 @@ const Index = () => {
       <Helmet>
         <title>Librifree – Biblioteca Digitale Gratuita di Libri Classici</title>
         <meta name="description" content="Leggi gratuitamente migliaia di libri classici online. Letteratura italiana, inglese, francese, russa e americana." />
+        <link rel="canonical" href="https://librifree.lovable.app/" />
+        <meta property="og:title" content="Librifree – Biblioteca Digitale Gratuita" />
+        <meta property="og:description" content="Leggi gratuitamente migliaia di libri classici online." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://librifree.lovable.app/" />
       </Helmet>
 
       <div className="min-h-svh bg-background">
