@@ -60,24 +60,6 @@ const AdminPanel = () => {
     }
   };
 
-  const handleImport = async (lang: string) => {
-    setImportLoading(true);
-    setImportResult(null);
-    try {
-      const { data, error } = await supabase.functions.invoke("import-gutenberg-books", {
-        body: { language: lang, limit: 32 },
-      });
-      if (error) throw error;
-      setImportResult(`Imported: ${data.imported}, Skipped: ${data.skipped}`);
-      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
-    } catch (e) {
-      setImportResult("Import failed");
-    } finally {
-      setImportLoading(false);
-    }
-  };
-
   const handleFetchCovers = async () => {
     setImportLoading(true);
     try {
