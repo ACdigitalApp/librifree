@@ -88,7 +88,7 @@ const AuthorPage = () => {
               {authorName}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {books.length} {books.length === 1 ? t("bookSingular") : t("bookPlural")} {t("availableOnLibrifree") || "disponibili su Librifree"}
+              {books.length} {books.length === 1 ? t("bookSingular") : t("bookPlural")} disponibili su Librifree
             </p>
           </header>
 
