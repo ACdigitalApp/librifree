@@ -43,9 +43,10 @@ const AdminPanel = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [command, setCommand] = useState("");
   const [commandResult, setCommandResult] = useState("");
+  const [adminSortBy, setAdminSortBy] = useState("views");
 
   const { data: stats, isLoading: loadingStats } = useAdminStats();
-  const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: "views" });
+  const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: adminSortBy });
 
   useEffect(() => {
     if (!checkingAdmin && isAdmin === false) {
