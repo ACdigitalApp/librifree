@@ -10,6 +10,7 @@ export interface Book {
   title: string;
   author: string;
   cover: string;
+  description?: string;
   content: string;
 }
 
