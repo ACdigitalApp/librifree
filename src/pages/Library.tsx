@@ -15,9 +15,11 @@ import {
 
 const Library = () => {
   const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get("categoria") || "";
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [categorySlug, setCategorySlug] = useState("");
+  const [categorySlug, setCategorySlug] = useState(initialCategory);
 
   const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const handleSearch = (value: string) => {
