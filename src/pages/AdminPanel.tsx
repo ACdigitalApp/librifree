@@ -33,7 +33,6 @@ const AdminPanel = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [importLoading, setImportLoading] = useState(false);
-  const [importResult, setImportResult] = useState<string | null>(null);
 
   const { data: stats, isLoading: loadingStats } = useAdminStats();
   const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: "views" });
