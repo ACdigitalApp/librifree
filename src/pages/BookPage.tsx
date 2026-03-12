@@ -1,12 +1,21 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useBook } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 
 type FontSize = "sm" | "md" | "lg" | "xl";
+
+function slugifyAuthor(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 const BookPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -16,7 +25,6 @@ const BookPage = () => {
   const [fontSize, setFontSize] = useState<FontSize>("md");
   const [showToc, setShowToc] = useState(false);
 
-  // Extract table of contents from content
   const toc = useMemo(() => {
     if (!book?.content) return [];
     const parser = new DOMParser();
@@ -29,11 +37,10 @@ const BookPage = () => {
     }));
   }, [book?.content]);
 
-  // Add IDs to headings in the rendered content
   const processedContent = useMemo(() => {
     if (!book?.content) return "";
     let index = 0;
-    return book.content.replace(/<(h[23])>/g, (match, tag) => {
+    return book.content.replace(/<(h[23])>/g, (_match, tag) => {
       return `<${tag} id="heading-${index++}">`;
     });
   }, [book?.content]);
@@ -71,6 +78,14 @@ const BookPage = () => {
     inLanguage: book.language || "it",
   };
 
+  const seoLinks = [
+    { to: `/riassunto/${book.slug}`, label: t("readSummary"), icon: BookMarked },
+    { to: `/personaggi/${book.slug}`, label: t("characters"), icon: Users },
+    { to: `/citazioni/${book.slug}`, label: t("quotes"), icon: Quote },
+    { to: `/analisi/${book.slug}`, label: t("analysis"), icon: Layers },
+    { to: `/capitoli/${book.slug}`, label: t("chapters"), icon: List },
+  ];
+
   return (
     <>
       <Helmet>
@@ -80,70 +95,40 @@ const BookPage = () => {
       </Helmet>
 
       <div className={`min-h-svh transition-colors ${darkMode ? "reader-dark bg-[hsl(0,0%,8%)] text-[hsl(0,0%,85%)]" : "bg-background text-foreground"}`}>
-        {/* Top bar */}
         <nav className={`sticky top-0 z-10 backdrop-blur-md border-b ${darkMode ? "bg-[hsl(0,0%,8%)]/80 border-[hsl(0,0%,20%)]" : "bg-background/80 border-border"}`}>
           <div className="flex items-center justify-between px-6 py-3 max-w-[65ch] mx-auto">
             <Link to="/biblioteca" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">{t("backToLibrary")}</span>
             </Link>
-
             <div className="flex items-center gap-1">
-              {/* TOC */}
               {toc.length > 0 && (
-                <button
-                  onClick={() => setShowToc(!showToc)}
-                  className={`p-2 rounded-full transition-colors ${showToc ? "bg-foreground/10" : "hover:bg-foreground/5"}`}
-                  title="Table of Contents"
-                >
+                <button onClick={() => setShowToc(!showToc)} className={`p-2 rounded-full transition-colors ${showToc ? "bg-foreground/10" : "hover:bg-foreground/5"}`}>
                   <List className="w-4 h-4" />
                 </button>
               )}
-
-              {/* Font size */}
-              <button
-                onClick={() => currentFontIndex > 0 && setFontSize(fontSizes[currentFontIndex - 1])}
-                disabled={currentFontIndex === 0}
-                className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors"
-              >
+              <button onClick={() => currentFontIndex > 0 && setFontSize(fontSizes[currentFontIndex - 1])} disabled={currentFontIndex === 0} className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors">
                 <Minus className="w-3.5 h-3.5" />
               </button>
               <span className="text-xs w-5 text-center font-medium uppercase">{fontSize}</span>
-              <button
-                onClick={() => currentFontIndex < fontSizes.length - 1 && setFontSize(fontSizes[currentFontIndex + 1])}
-                disabled={currentFontIndex === fontSizes.length - 1}
-                className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors"
-              >
+              <button onClick={() => currentFontIndex < fontSizes.length - 1 && setFontSize(fontSizes[currentFontIndex + 1])} disabled={currentFontIndex === fontSizes.length - 1} className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors">
                 <Plus className="w-3.5 h-3.5" />
               </button>
-
-              {/* Dark mode */}
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="p-2 rounded-full hover:bg-foreground/5 transition-colors"
-              >
+              <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-full hover:bg-foreground/5 transition-colors">
                 {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
-
               <LanguageSelector />
             </div>
           </div>
         </nav>
 
-        {/* TOC sidebar */}
         {showToc && toc.length > 0 && (
           <div className={`fixed right-0 top-[53px] bottom-0 w-72 z-20 overflow-y-auto border-l p-4 ${darkMode ? "bg-[hsl(0,0%,10%)] border-[hsl(0,0%,20%)]" : "bg-background border-border"}`}>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              {t("tableOfContents")}
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t("tableOfContents")}</p>
             <ul className="space-y-1">
               {toc.map((item) => (
                 <li key={item.id}>
-                  <a
-                    href={`#${item.id}`}
-                    onClick={() => setShowToc(false)}
-                    className={`block text-sm py-1 transition-colors hover:text-foreground ${item.level === 3 ? "pl-4 text-muted-foreground" : "font-medium text-foreground/80"}`}
-                  >
+                  <a href={`#${item.id}`} onClick={() => setShowToc(false)} className={`block text-sm py-1 transition-colors hover:text-foreground ${item.level === 3 ? "pl-4 text-muted-foreground" : "font-medium text-foreground/80"}`}>
                     {item.text}
                   </a>
                 </li>
@@ -152,37 +137,40 @@ const BookPage = () => {
           </div>
         )}
 
-        {/* Content */}
         <article className={`px-6 py-10 sm:py-16 max-w-[65ch] mx-auto reader-${fontSize}`}>
           <header className="mb-12 text-center">
             {book.cover_url && (
-              <img
-                src={book.cover_url}
-                alt={`${t("coverAlt")} ${book.title}`}
-                className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8"
-              />
+              <img src={book.cover_url} alt={`${t("coverAlt")} ${book.title}`} className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8" />
             )}
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ textWrap: "balance" }}>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ textWrap: "balance" } as React.CSSProperties}>
               {book.title}
             </h1>
-            <p className="mt-2 text-base text-muted-foreground">{book.author}</p>
+            <Link to={`/author/${slugifyAuthor(book.author)}`} className="mt-2 text-base text-muted-foreground hover:text-foreground transition-colors inline-block">
+              {book.author}
+            </Link>
             {book.categories && (
-              <span className={`inline-block mt-3 text-xs px-3 py-1 rounded-full ${darkMode ? "bg-[hsl(0,0%,15%)]" : "bg-secondary"} text-muted-foreground`}>
+              <span className={`block mt-3 text-xs px-3 py-1 rounded-full ${darkMode ? "bg-[hsl(0,0%,15%)]" : "bg-secondary"} text-muted-foreground inline-block`}>
                 {book.categories.name}
               </span>
             )}
             {book.description && (
-              <p className="mt-4 text-sm text-muted-foreground italic max-w-lg mx-auto" style={{ textWrap: "balance" }}>
+              <p className="mt-4 text-sm text-muted-foreground italic max-w-lg mx-auto" style={{ textWrap: "balance" } as React.CSSProperties}>
                 {book.description}
               </p>
             )}
-            <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
-              <Link
-                to={`/riassunto/${book.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
-              >
-                {t("readSummary")}
-              </Link>
+
+            {/* SEO page links */}
+            <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
+              {seoLinks.map(({ to, label, icon: Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
+                >
+                  <Icon className="w-3 h-3" />
+                  {label}
+                </Link>
+              ))}
               {book.file_url && (
                 <a
                   href={book.file_url}
@@ -197,10 +185,7 @@ const BookPage = () => {
           </header>
 
           {processedContent && (
-            <div
-              className="prose-book"
-              dangerouslySetInnerHTML={{ __html: processedContent }}
-            />
+            <div className="prose-book" dangerouslySetInnerHTML={{ __html: processedContent }} />
           )}
         </article>
       </div>

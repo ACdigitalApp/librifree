@@ -9,6 +9,8 @@ import Index from "./pages/Index.tsx";
 import Library from "./pages/Library.tsx";
 import BookPage from "./pages/BookPage.tsx";
 import SummaryPage from "./pages/SummaryPage.tsx";
+import AuthorPage from "./pages/AuthorPage.tsx";
+import { CharactersPage, QuotesPage, AnalysisPage, ChaptersPage } from "./pages/SEOContentPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,11 @@ const App = () => (
               <Route path="/libri/:slug" element={<BookPage />} />
               <Route path="/libro/:slug" element={<BookPage />} />
               <Route path="/riassunto/:slug" element={<SummaryPage />} />
+              <Route path="/personaggi/:slug" element={<CharactersPage />} />
+              <Route path="/citazioni/:slug" element={<QuotesPage />} />
+              <Route path="/analisi/:slug" element={<AnalysisPage />} />
+              <Route path="/capitoli/:slug" element={<ChaptersPage />} />
+              <Route path="/author/:name" element={<AuthorPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
