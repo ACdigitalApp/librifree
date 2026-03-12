@@ -30,7 +30,6 @@ export async function fetchBooks({
   }
 
   if (categorySlug) {
-    // Need to filter by category slug via a subquery
     const { data: cat } = await supabase
       .from("categories")
       .select("id")
@@ -57,7 +56,7 @@ export async function fetchBooks({
     books: (data as BookWithCategory[]) ?? [],
     totalCount: count ?? 0,
     pageSize: PAGE_SIZE,
-    hasMore: ((count ?? 0) > (page + 1) * PAGE_SIZE),
+    hasMore: (count ?? 0) > (page + 1) * PAGE_SIZE,
   };
 }
 
@@ -80,4 +79,60 @@ export async function fetchCategories() {
 
   if (error) throw error;
   return data as Category[];
+}
+
+export async function fetchRecentBooks(limit = 12) {
+  const { data, error } = await supabase
+    .from("books")
+    .select("*, categories(*)")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data as BookWithCategory[]) ?? [];
+}
+
+export async function fetchPopularBooks(limit = 12) {
+  // Popular = books with summaries (more complete content)
+  const { data, error } = await supabase
+    .from("books")
+    .select("*, categories(*)")
+    .not("summary", "is", null)
+    .order("title", { ascending: true })
+    .limit(limit);
+
+  if (error) throw error;
+
+  // If not enough books with summaries, fill with any books
+  if ((data?.length ?? 0) < limit) {
+    const { data: fallback } = await supabase
+      .from("books")
+      .select("*, categories(*)")
+      .order("title", { ascending: true })
+      .limit(limit);
+    return (fallback as BookWithCategory[]) ?? [];
+  }
+
+  return (data as BookWithCategory[]) ?? [];
+}
+
+export async function fetchCategoriesWithCount() {
+  const { data: categories, error: catError } = await supabase
+    .from("categories")
+    .select("*")
+    .order("name");
+
+  if (catError) throw catError;
+
+  // Get counts per category
+  const results: (Category & { count: number })[] = [];
+  for (const cat of categories ?? []) {
+    const { count } = await supabase
+      .from("books")
+      .select("id", { count: "exact", head: true })
+      .eq("category_id", cat.id);
+    results.push({ ...cat, count: count ?? 0 });
+  }
+
+  return results.filter((c) => c.count > 0);
 }
