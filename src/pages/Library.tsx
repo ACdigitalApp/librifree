@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useBooks, useCategories } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, BookMarked } from "lucide-react";
 import { AdBanner } from "@/components/Monetization";
 import { Input } from "@/components/ui/input";
 import {
@@ -108,36 +108,41 @@ const Library = () => {
         {!isLoading && (
           <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {allBooks.map((book) => (
-              <Link
-                key={book.id}
-                to={`/libri/${book.slug}`}
-                className="group"
-              >
-                <div className="overflow-hidden rounded-lg bg-secondary aspect-[2/3]">
-                  {book.cover_url ? (
-                    <img
-                      src={book.cover_url}
-                      alt={`${t("coverAlt")} ${book.title}`}
-                      className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center p-4">
-                      <span className="text-muted-foreground text-xs text-center">
-                        {book.title}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-2.5">
-                  <p className="text-sm font-medium text-foreground truncate leading-tight">
-                    {book.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {book.author}
-                  </p>
-                </div>
-              </Link>
+              <div key={book.id} className="group">
+                <Link to={`/libri/${book.slug}`}>
+                  <div className="overflow-hidden rounded-lg bg-secondary aspect-[2/3]">
+                    {book.cover_url ? (
+                      <img
+                        src={book.cover_url}
+                        alt={`${t("coverAlt")} ${book.title}`}
+                        className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center p-4">
+                        <span className="text-muted-foreground text-xs text-center">
+                          {book.title}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-2.5">
+                    <p className="text-sm font-medium text-foreground truncate leading-tight">
+                      {book.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {book.author}
+                    </p>
+                  </div>
+                </Link>
+                <Link
+                  to={`/riassunto/${book.slug}`}
+                  className="mt-2 w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium transition-colors hover:bg-primary/90"
+                >
+                  <BookMarked className="w-3 h-3" />
+                  Visualizza Riassunto
+                </Link>
+              </div>
             ))}
           </div>
         )}
