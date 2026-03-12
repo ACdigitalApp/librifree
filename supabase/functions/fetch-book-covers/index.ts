@@ -64,8 +64,8 @@ Deno.serve(async (req) => {
           results.push({ title: book.title, status: "not_found" });
         }
 
-        // Rate limit: 200ms between requests
-        await new Promise((r) => setTimeout(r, 200));
+        // Rate limit: 100ms between requests
+        await new Promise((r) => setTimeout(r, 100));
       } catch (e) {
         results.push({ title: book.title, status: "error" });
       }
