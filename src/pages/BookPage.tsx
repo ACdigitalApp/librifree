@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useBook } from "@/hooks/useBooks";
+import { incrementBookViews } from "@/lib/api";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers } from "lucide-react";
