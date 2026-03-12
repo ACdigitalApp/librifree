@@ -94,6 +94,9 @@ const BookPage = () => {
     { to: `/capitoli/${book.slug}`, label: t("chapters"), icon: List },
     { to: `/temi/${book.slug}`, label: t("themes"), icon: Layers },
     { to: `/contesto-storico/${book.slug}`, label: t("historicalContext"), icon: Clock },
+    { to: `/riassunto-scuola/${book.slug}`, label: t("schoolSummary"), icon: GraduationCap },
+    { to: `/analisi-scolastica/${book.slug}`, label: t("schoolAnalysis"), icon: GraduationCap },
+    { to: `/personaggi-spiegati/${book.slug}`, label: t("charactersExplained"), icon: Users },
   ];
 
   return (
