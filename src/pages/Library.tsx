@@ -21,7 +21,7 @@ const Library = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categorySlug, setCategorySlug] = useState(initialCategory);
-  const [sortBy, setSortBy] = useState<"author" | "title" | "views" | "created_at">("author");
+  const [sortBy, setSortBy] = useState<"author" | "author_desc" | "title" | "title_desc" | "views" | "created_at">("author");
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearch = useCallback((value: string) => {
