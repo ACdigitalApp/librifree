@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://librifree.lovable.app/sitemap.xml
+Sitemap: https://imfutdnsefzmdlvasval.supabase.co/functions/v1/generate-sitemap?type=index

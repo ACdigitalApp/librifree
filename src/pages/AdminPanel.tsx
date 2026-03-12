@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminStats, useAdminBooks, useIsAdmin, useCategories } from "@/hooks/useBooks";
 import { deleteBook, updateBook } from "@/lib/api";
-import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Upload } from "lucide-react";
+import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye } from "lucide-react";
+import MassImportTool from "@/components/admin/MassImportTool";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +33,6 @@ const AdminPanel = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [importLoading, setImportLoading] = useState(false);
-  const [importResult, setImportResult] = useState<string | null>(null);
 
   const { data: stats, isLoading: loadingStats } = useAdminStats();
   const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: "views" });
@@ -57,24 +57,6 @@ const AdminPanel = () => {
       toast({ title: "Deleted", description: `"${title}" removed.` });
     } catch {
       toast({ title: "Error", description: "Failed to delete.", variant: "destructive" });
-    }
-  };
-
-  const handleImport = async (lang: string) => {
-    setImportLoading(true);
-    setImportResult(null);
-    try {
-      const { data, error } = await supabase.functions.invoke("import-gutenberg-books", {
-        body: { language: lang, limit: 32 },
-      });
-      if (error) throw error;
-      setImportResult(`Imported: ${data.imported}, Skipped: ${data.skipped}`);
-      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
-    } catch (e) {
-      setImportResult("Import failed");
-    } finally {
-      setImportLoading(false);
     }
   };
 
@@ -133,25 +115,18 @@ const AdminPanel = () => {
           </div>
         </div>
 
-        {/* Import Tools */}
+        {/* Mass Import Tool */}
+        <MassImportTool />
+
+        {/* Quick Tools */}
         <div className="rounded-xl border border-border p-5 mb-8">
-          <h2 className="text-sm font-semibold mb-3">Import & Tools</h2>
+          <h2 className="text-sm font-semibold mb-3">Tools</h2>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => handleImport("it")} disabled={importLoading}>
-              {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
-              <Upload className="h-3 w-3 mr-1" /> Import IT
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => handleImport("en")} disabled={importLoading}>
-              <Upload className="h-3 w-3 mr-1" /> Import EN
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => handleImport("fr")} disabled={importLoading}>
-              <Upload className="h-3 w-3 mr-1" /> Import FR
-            </Button>
             <Button size="sm" variant="outline" onClick={handleFetchCovers} disabled={importLoading}>
+              {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               Fetch Covers
             </Button>
           </div>
-          {importResult && <p className="text-xs text-muted-foreground mt-2">{importResult}</p>}
         </div>
 
         {/* Book List */}
