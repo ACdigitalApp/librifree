@@ -1,18 +1,50 @@
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useBook } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, ChevronLeft, ChevronRight } from "lucide-react";
+import { Helmet } from "react-helmet-async";
+
+type FontSize = "sm" | "md" | "lg" | "xl";
 
 const BookPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: book, isLoading, error } = useBook(slug);
   const { t } = useLanguage();
+  const [darkMode, setDarkMode] = useState(false);
+  const [fontSize, setFontSize] = useState<FontSize>("md");
+  const [showToc, setShowToc] = useState(false);
+
+  // Extract table of contents from content
+  const toc = useMemo(() => {
+    if (!book?.content) return [];
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(book.content, "text/html");
+    const headings = doc.querySelectorAll("h2, h3");
+    return Array.from(headings).map((h, i) => ({
+      id: `heading-${i}`,
+      text: h.textContent || "",
+      level: h.tagName === "H2" ? 2 : 3,
+    }));
+  }, [book?.content]);
+
+  // Add IDs to headings in the rendered content
+  const processedContent = useMemo(() => {
+    if (!book?.content) return "";
+    let index = 0;
+    return book.content.replace(/<(h[23])>/g, (match, tag) => {
+      return `<${tag} id="heading-${index++}">`;
+    });
+  }, [book?.content]);
+
+  const fontSizes: FontSize[] = ["sm", "md", "lg", "xl"];
+  const currentFontIndex = fontSizes.indexOf(fontSize);
 
   if (isLoading) {
     return (
       <div className="min-h-svh flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -20,77 +52,141 @@ const BookPage = () => {
   if (error || !book) {
     return (
       <div className="min-h-svh flex flex-col items-center justify-center text-center px-6">
-        <h1 className="font-display text-2xl font-medium text-foreground">
-          {t("bookNotFound")}
-        </h1>
-        <Link
-          to="/biblioteca"
-          className="mt-4 text-primary hover:text-primary/80 transition-colors font-body"
-        >
+        <h1 className="font-semibold text-xl text-foreground">{t("bookNotFound")}</h1>
+        <Link to="/biblioteca" className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
           {t("backToLibrary")}
         </Link>
       </div>
     );
   }
 
-  return (
-    <main className="px-6 py-12 sm:py-16">
-      <article className="mx-auto max-w-[65ch]">
-        <div className="flex items-center justify-between mb-12">
-          <Link
-            to="/biblioteca"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors font-body"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t("backToLibrary")}
-          </Link>
-          <LanguageSelector />
-        </div>
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    name: book.title,
+    author: { "@type": "Person", name: book.author },
+    description: book.description || "",
+    url: `https://librifree.lovable.app/libri/${book.slug}`,
+    image: book.cover_url || "",
+    inLanguage: book.language || "it",
+  };
 
-        <header className="mb-12 text-center">
-          {book.cover_url && (
-            <img
-              src={book.cover_url}
-              alt={`${t("coverAlt")} ${book.title}`}
-              className="mx-auto w-48 rounded-md shadow-lg mb-8"
-              style={{
-                outline: "1px solid rgba(0,0,0,0.08)",
-                outlineOffset: "-1px",
-              }}
+  return (
+    <>
+      <Helmet>
+        <title>{`${book.title} – ${book.author} | Librifree`}</title>
+        <meta name="description" content={book.description || `Leggi ${book.title} di ${book.author} gratuitamente su Librifree.`} />
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+      </Helmet>
+
+      <div className={`min-h-svh transition-colors ${darkMode ? "reader-dark bg-[hsl(0,0%,8%)] text-[hsl(0,0%,85%)]" : "bg-background text-foreground"}`}>
+        {/* Top bar */}
+        <nav className={`sticky top-0 z-10 backdrop-blur-md border-b ${darkMode ? "bg-[hsl(0,0%,8%)]/80 border-[hsl(0,0%,20%)]" : "bg-background/80 border-border"}`}>
+          <div className="flex items-center justify-between px-6 py-3 max-w-[65ch] mx-auto">
+            <Link to="/biblioteca" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">{t("backToLibrary")}</span>
+            </Link>
+
+            <div className="flex items-center gap-1">
+              {/* TOC */}
+              {toc.length > 0 && (
+                <button
+                  onClick={() => setShowToc(!showToc)}
+                  className={`p-2 rounded-full transition-colors ${showToc ? "bg-foreground/10" : "hover:bg-foreground/5"}`}
+                  title="Table of Contents"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* Font size */}
+              <button
+                onClick={() => currentFontIndex > 0 && setFontSize(fontSizes[currentFontIndex - 1])}
+                disabled={currentFontIndex === 0}
+                className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-xs w-5 text-center font-medium uppercase">{fontSize}</span>
+              <button
+                onClick={() => currentFontIndex < fontSizes.length - 1 && setFontSize(fontSizes[currentFontIndex + 1])}
+                disabled={currentFontIndex === fontSizes.length - 1}
+                className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Dark mode */}
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 rounded-full hover:bg-foreground/5 transition-colors"
+              >
+                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+
+              <LanguageSelector />
+            </div>
+          </div>
+        </nav>
+
+        {/* TOC sidebar */}
+        {showToc && toc.length > 0 && (
+          <div className={`fixed right-0 top-[53px] bottom-0 w-72 z-20 overflow-y-auto border-l p-4 ${darkMode ? "bg-[hsl(0,0%,10%)] border-[hsl(0,0%,20%)]" : "bg-background border-border"}`}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              {t("tableOfContents")}
+            </p>
+            <ul className="space-y-1">
+              {toc.map((item) => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    onClick={() => setShowToc(false)}
+                    className={`block text-sm py-1 transition-colors hover:text-foreground ${item.level === 3 ? "pl-4 text-muted-foreground" : "font-medium text-foreground/80"}`}
+                  >
+                    {item.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Content */}
+        <article className={`px-6 py-10 sm:py-16 max-w-[65ch] mx-auto reader-${fontSize}`}>
+          <header className="mb-12 text-center">
+            {book.cover_url && (
+              <img
+                src={book.cover_url}
+                alt={`${t("coverAlt")} ${book.title}`}
+                className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8"
+              />
+            )}
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ textWrap: "balance" }}>
+              {book.title}
+            </h1>
+            <p className="mt-2 text-base text-muted-foreground">{book.author}</p>
+            {book.categories && (
+              <span className={`inline-block mt-3 text-xs px-3 py-1 rounded-full ${darkMode ? "bg-[hsl(0,0%,15%)]" : "bg-secondary"} text-muted-foreground`}>
+                {book.categories.name}
+              </span>
+            )}
+            {book.description && (
+              <p className="mt-4 text-sm text-muted-foreground italic max-w-lg mx-auto" style={{ textWrap: "balance" }}>
+                {book.description}
+              </p>
+            )}
+          </header>
+
+          {processedContent && (
+            <div
+              className="prose-book"
+              dangerouslySetInnerHTML={{ __html: processedContent }}
             />
           )}
-          <h1
-            className="font-display text-3xl sm:text-4xl font-medium text-foreground"
-            style={{ textWrap: "balance", letterSpacing: "-0.02em" }}
-          >
-            {book.title}
-          </h1>
-          <p className="mt-2 text-lg text-muted-foreground font-body">
-            {book.author}
-          </p>
-          {book.categories && (
-            <p className="mt-2 text-sm text-muted-foreground font-body">
-              {book.categories.name}
-            </p>
-          )}
-          {book.description && (
-            <p
-              className="mt-4 text-sm text-muted-foreground font-body italic"
-              style={{ textWrap: "balance" }}
-            >
-              {book.description}
-            </p>
-          )}
-        </header>
-
-        {book.content && (
-          <div
-            className="prose-book text-foreground"
-            dangerouslySetInnerHTML={{ __html: book.content }}
-          />
-        )}
-      </article>
-    </main>
+        </article>
+      </div>
+    </>
   );
 };
 
