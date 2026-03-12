@@ -157,9 +157,10 @@ export async function fetchAdminBooks({
     query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
   }
 
-  const ascending = sortBy === "title";
+  const column = sortBy.replace("_desc", "") as string;
+  const ascending = sortBy === "title" || sortBy === "author";
   query = query
-    .order(sortBy, { ascending })
+    .order(column, { ascending })
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
   const { data, error, count } = await query;

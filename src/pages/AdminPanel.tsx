@@ -231,7 +231,9 @@ const AdminPanel = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="author">Autore A-Z</SelectItem>
+              <SelectItem value="author_desc">Autore Z-A</SelectItem>
               <SelectItem value="title">Titolo A-Z</SelectItem>
+              <SelectItem value="title_desc">Titolo Z-A</SelectItem>
               <SelectItem value="views">Più visti</SelectItem>
               <SelectItem value="created_at">Più recenti</SelectItem>
             </SelectContent>
