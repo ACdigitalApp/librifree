@@ -23,9 +23,10 @@ export async function fetchBooks({
   language?: string;
   sortBy?: "title" | "views" | "created_at";
 } = {}) {
+  // Only select listing columns (exclude heavy content/summary fields)
   let query = supabase
     .from("books")
-    .select("*, categories(*)", { count: "exact" });
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)", { count: "exact" });
 
   if (search) {
     query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
