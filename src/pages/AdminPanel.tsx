@@ -49,7 +49,7 @@ const AdminPanel = () => {
   const [duplicates, setDuplicates] = useState<Array<{ keep: any; remove: any[]; reason: string }>>([]);
 
   const { data: stats, isLoading: loadingStats } = useAdminStats();
-  const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: adminSortBy });
+  const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: adminSortBy, pageSize: adminPageSize });
 
   useEffect(() => {
     if (!checkingAdmin && isAdmin === false) {
