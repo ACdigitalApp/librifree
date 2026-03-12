@@ -179,3 +179,5 @@ export const ThemesPage = () => (
 export const HistoricalContextPage = () => (
   <SEOContentPage type="historical_context" titleKey="historicalContextOf" seoPrefix="Contesto storico di" urlPrefix="contesto-storico" />
 );
+
+export default SEOContentPage;

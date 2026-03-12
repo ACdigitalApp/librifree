@@ -23,7 +23,7 @@ const AdminPanel = lazy(() => import("./pages/AdminPanel.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 // SEO content pages
-const SEOContentPage = lazy(() => import("./pages/SEOContentPage.tsx"));
+// SEO content page lazy imports
 const CharactersPage = lazy(() =>
   import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.CharactersPage }))
 );
