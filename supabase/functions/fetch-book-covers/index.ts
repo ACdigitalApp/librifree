@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
         // Search Open Library
         const searchQuery = encodeURIComponent(`${book.title} ${book.author}`);
         const searchRes = await fetch(
-          `https://openlibrary.org/search.json?q=${searchQuery}&limit=3&fields=key,cover_i,title,author_name`,
-          { signal: AbortSignal.timeout(5000) }
+          `https://openlibrary.org/search.json?q=${searchQuery}&limit=1&fields=cover_i`,
+          { signal: AbortSignal.timeout(3000) }
         );
         const searchData = await searchRes.json();
 
