@@ -215,7 +215,7 @@ const AdminPanel = () => {
         </div>
 
         {/* Book List */}
-        <div className="mb-4 flex items-center gap-3">
+        <div className="mb-4 flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -225,6 +225,17 @@ const AdminPanel = () => {
               className="pl-9 h-9 text-sm"
             />
           </div>
+          <Select value={adminSortBy} onValueChange={(v) => { setAdminSortBy(v); setPage(0); }}>
+            <SelectTrigger className="w-[180px] h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="author">Autore A-Z</SelectItem>
+              <SelectItem value="title">Titolo A-Z</SelectItem>
+              <SelectItem value="views">Più visti</SelectItem>
+              <SelectItem value="created_at">Più recenti</SelectItem>
+            </SelectContent>
+          </Select>
           <p className="text-xs text-muted-foreground">
             {booksData?.totalCount ?? 0} books
           </p>
