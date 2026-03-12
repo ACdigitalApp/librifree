@@ -15,12 +15,12 @@ export function useBooks({
   search = "",
   categorySlug = "",
   language = "",
-  sortBy = "author" as "title" | "author" | "views" | "created_at",
+  sortBy = "author" as "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at",
 }: {
   search?: string;
   categorySlug?: string;
   language?: string;
-  sortBy?: "title" | "author" | "views" | "created_at";
+  sortBy?: "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at";
 } = {}) {
   return useInfiniteQuery({
     queryKey: ["books", search, categorySlug, language, sortBy],
