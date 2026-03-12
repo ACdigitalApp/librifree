@@ -17,9 +17,10 @@ export interface Book {
 export const books: Book[] = [
   {
     slug: "divina-commedia",
-    title: "La Divina Commedia",
+    title: "Divina Commedia",
     author: "Dante Alighieri",
     cover: divinaCommedia,
+    description: "La Divina Commedia è il celebre poema di Dante Alighieri, considerato uno dei capolavori della letteratura mondiale. Racconta il viaggio immaginario di Dante attraverso Inferno, Purgatorio e Paradiso.",
     content: `<h2>Inferno – Canto I</h2>
 <p>Nel mezzo del cammin di nostra vita<br/>mi ritrovai per una selva oscura,<br/>ché la diritta via era smarrita.</p>
 <p>Ahi quanto a dir qual era è cosa dura<br/>esta selva selvaggia e aspra e forte<br/>che nel pensier rinova la paura!</p>

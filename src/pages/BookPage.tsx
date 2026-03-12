@@ -30,6 +30,9 @@ const BookPage = () => {
             {book.title}
           </h1>
           <p className="mt-2 text-lg text-muted-foreground font-body">{book.author}</p>
+          {book.description && (
+            <p className="mt-4 text-sm text-muted-foreground font-body italic" style={{ textWrap: "balance" }}>{book.description}</p>
+          )}
         </header>
 
         <div
