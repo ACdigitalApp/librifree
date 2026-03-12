@@ -6,6 +6,8 @@ import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2, Sparkles, BookOpen } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
+import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
+import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 
 type ContentType = "characters" | "quotes" | "analysis" | "chapters" | "themes";
 
