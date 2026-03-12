@@ -21,7 +21,7 @@ const Library = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categorySlug, setCategorySlug] = useState(initialCategory);
-  const [sortBy, setSortBy] = useState<"author" | "title" | "views" | "created_at">("author");
+  const [sortBy, setSortBy] = useState<"author" | "author_desc" | "title" | "title_desc" | "views" | "created_at">("author");
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearch = useCallback((value: string) => {
@@ -95,7 +95,9 @@ const Library = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="author">Autore A-Z</SelectItem>
+              <SelectItem value="author_desc">Autore Z-A</SelectItem>
               <SelectItem value="title">Titolo A-Z</SelectItem>
+              <SelectItem value="title_desc">Titolo Z-A</SelectItem>
               <SelectItem value="views">Più visti</SelectItem>
               <SelectItem value="created_at">Più recenti</SelectItem>
             </SelectContent>

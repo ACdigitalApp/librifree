@@ -166,43 +166,10 @@ const AdminPanel = () => {
         {/* Mass Import Tool */}
         <MassImportTool />
 
-        {/* Command Box */}
-        <div className="rounded-xl border border-border p-5 mb-8">
-          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Terminal className="h-4 w-4" /> Comando
-          </h2>
-          <Textarea
-            placeholder="Scrivi un comando o una nota..."
-            value={command}
-            onChange={(e) => setCommand(e.target.value)}
-            className="min-h-[80px] text-sm mb-3"
-          />
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              onClick={() => {
-                setCommandResult(`Comando eseguito: "${command}"`);
-                toast({ title: "Comando inviato", description: command });
-              }}
-              disabled={!command.trim()}
-            >
-              Esegui
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => { setCommand(""); setCommandResult(""); }}>
-              Pulisci
-            </Button>
-          </div>
-          {commandResult && (
-            <pre className="mt-3 text-xs bg-secondary rounded-lg p-3 whitespace-pre-wrap text-muted-foreground">
-              {commandResult}
-            </pre>
-          )}
-        </div>
-
-        {/* Quick Tools */}
+        {/* Tools + Command */}
         <div className="rounded-xl border border-border p-5 mb-8">
           <h2 className="text-sm font-semibold mb-3">Tools</h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-5">
             <Button size="sm" variant="outline" onClick={handleFetchCovers} disabled={importLoading}>
               {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               Fetch Covers
@@ -211,6 +178,37 @@ const AdminPanel = () => {
               {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               Generate AI Covers
             </Button>
+          </div>
+          <div className="border-t border-border pt-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Terminal className="h-4 w-4" /> Comando
+            </h3>
+            <Textarea
+              placeholder="Scrivi un comando o una nota..."
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              className="min-h-[80px] text-sm mb-3"
+            />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => {
+                  setCommandResult(`Comando eseguito: "${command}"`);
+                  toast({ title: "Comando inviato", description: command });
+                }}
+                disabled={!command.trim()}
+              >
+                Esegui
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => { setCommand(""); setCommandResult(""); }}>
+                Pulisci
+              </Button>
+            </div>
+            {commandResult && (
+              <pre className="mt-3 text-xs bg-secondary rounded-lg p-3 whitespace-pre-wrap text-muted-foreground">
+                {commandResult}
+              </pre>
+            )}
           </div>
         </div>
 
@@ -231,7 +229,9 @@ const AdminPanel = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="author">Autore A-Z</SelectItem>
+              <SelectItem value="author_desc">Autore Z-A</SelectItem>
               <SelectItem value="title">Titolo A-Z</SelectItem>
+              <SelectItem value="title_desc">Titolo Z-A</SelectItem>
               <SelectItem value="views">Più visti</SelectItem>
               <SelectItem value="created_at">Più recenti</SelectItem>
             </SelectContent>

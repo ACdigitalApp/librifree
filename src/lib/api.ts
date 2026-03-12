@@ -21,7 +21,7 @@ export async function fetchBooks({
   search?: string;
   categorySlug?: string;
   language?: string;
-  sortBy?: "title" | "author" | "views" | "created_at";
+  sortBy?: "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at";
 } = {}) {
   // Only select listing columns (exclude heavy content/summary fields)
   let query = supabase
@@ -47,9 +47,10 @@ export async function fetchBooks({
     query = query.eq("language", language);
   }
 
+  const column = sortBy.replace("_desc", "") as string;
   const ascending = sortBy === "title" || sortBy === "author";
   query = query
-    .order(sortBy, { ascending })
+    .order(column, { ascending })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
   const { data, error, count } = await query;
@@ -156,9 +157,10 @@ export async function fetchAdminBooks({
     query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
   }
 
-  const ascending = sortBy === "title";
+  const column = sortBy.replace("_desc", "") as string;
+  const ascending = sortBy === "title" || sortBy === "author";
   query = query
-    .order(sortBy, { ascending })
+    .order(column, { ascending })
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
   const { data, error, count } = await query;
