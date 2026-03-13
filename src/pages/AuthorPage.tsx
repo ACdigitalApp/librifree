@@ -2,21 +2,12 @@ import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2, BookOpen, Users, Quote, Layers, List, BookMarked, Clock } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { AdBanner, AffiliateBookLink, RecommendedBooks } from "@/components/Monetization";
-import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
+import { AdBanner } from "@/components/Monetization";
 import type { BookWithCategory } from "@/lib/api";
-
-function slugifyAuthor(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+import SEOHead from "@/components/SEOHead";
+import { SITE_URL } from "@/lib/seo";
 
 function useAuthorBooks(authorSlug: string | undefined) {
   return useQuery({
@@ -40,16 +31,22 @@ const AuthorPage = () => {
     ? books[0].author
     : (name || "").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  const seoTitle = `${authorName} – Libri e Opere | Librifree`;
+  const authorPath = `/autore/${name}`;
+  const seoTitle = `Libri di ${authorName} – Opere Complete Gratuite | Librifree`;
   const seoDesc = `Scopri tutti i libri di ${authorName} disponibili gratuitamente su Librifree. Leggi le opere complete, i riassunti e le analisi letterarie.`;
 
-  const structuredData = {
+  const personSD = {
     "@context": "https://schema.org",
     "@type": "Person",
     name: authorName,
-    url: `https://librifree.lovable.app/autore/${name}`,
-    mainEntityOfPage: { "@type": "WebPage" },
+    url: `${SITE_URL}${authorPath}`,
   };
+
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Biblioteca", url: "/biblioteca" },
+    { name: authorName, url: authorPath },
+  ];
 
   const seoLinks = (slug: string) => [
     { to: `/libri/${slug}`, label: t("readFullBook"), icon: BookOpen },
@@ -64,12 +61,13 @@ const AuthorPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>{seoTitle}</title>
-        <meta name="description" content={seoDesc} />
-        <link rel="canonical" href={`https://librifree.lovable.app/autore/${name}`} />
-        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-      </Helmet>
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        path={authorPath}
+        structuredData={personSD}
+        breadcrumbs={breadcrumbs}
+      />
 
       <div className="min-h-svh bg-background text-foreground">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
@@ -83,6 +81,17 @@ const AuthorPage = () => {
         </nav>
 
         <div className="px-6 sm:px-8 py-10 sm:py-16 max-w-[1280px] mx-auto">
+          {/* Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
+            <ol className="flex items-center gap-1">
+              <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+              <li>/</li>
+              <li><Link to="/biblioteca" className="hover:text-foreground transition-colors">Biblioteca</Link></li>
+              <li>/</li>
+              <li className="text-foreground font-medium">{authorName}</li>
+            </ol>
+          </nav>
+
           <header className="mb-10">
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
               {authorName}
@@ -100,7 +109,6 @@ const AuthorPage = () => {
             <p className="text-sm text-muted-foreground text-center py-20">{t("noResults")}</p>
           ) : (
             <div className="space-y-10">
-              {/* Book grid */}
               <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {books.map((book) => (
                   <Link key={book.id} to={`/libri/${book.slug}`} className="group">
@@ -108,7 +116,7 @@ const AuthorPage = () => {
                       {book.cover_url ? (
                         <img
                           src={book.cover_url}
-                          alt={`${t("coverAlt")} ${book.title}`}
+                          alt={`Copertina di ${book.title} di ${book.author}`}
                           className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                           loading="lazy"
                         />
@@ -123,9 +131,8 @@ const AuthorPage = () => {
                 ))}
               </div>
 
-              {/* Cross-links for each book */}
               <section>
-                <h2 className="text-lg font-semibold tracking-tight mb-4">Esplora le opere</h2>
+                <h2 className="text-lg font-semibold tracking-tight mb-4">Esplora le opere di {authorName}</h2>
                 <div className="space-y-4">
                   {books.slice(0, 10).map((book) => (
                     <div key={book.id} className="rounded-xl border border-border p-4">

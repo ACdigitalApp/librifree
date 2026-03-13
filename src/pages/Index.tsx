@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useRecentBooks, usePopularBooks, useCategoriesWithCount } from "@/hooks/useBooks";
 import { ArrowRight, Loader2 } from "lucide-react";
 import type { BookWithCategory } from "@/lib/api";
+import SEOHead from "@/components/SEOHead";
+import { SITE_URL } from "@/lib/seo";
 
 function BookCard({ book }: { book: BookWithCategory }) {
   const { t } = useLanguage();
@@ -14,7 +15,7 @@ function BookCard({ book }: { book: BookWithCategory }) {
         {book.cover_url ? (
           <img
             src={book.cover_url}
-            alt={`${t("coverAlt")} ${book.title}`}
+            alt={`Copertina di ${book.title} di ${book.author}`}
             className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
             loading="lazy"
           />
@@ -64,17 +65,35 @@ const Index = () => {
   const { data: recent, isLoading: loadingRecent } = useRecentBooks(12);
   const { data: categories, isLoading: loadingCats } = useCategoriesWithCount();
 
+  const websiteSD = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Librifree",
+    url: SITE_URL,
+    description: "Biblioteca digitale gratuita con migliaia di libri classici online.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_URL}/biblioteca?search={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const orgSD = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Librifree",
+    url: SITE_URL,
+    logo: `${SITE_URL}/favicon.ico`,
+  };
+
   return (
     <>
-      <Helmet>
-        <title>Librifree – Biblioteca Digitale Gratuita di Libri Classici</title>
-        <meta name="description" content="Leggi gratuitamente migliaia di libri classici online. Letteratura italiana, inglese, francese, russa e americana." />
-        <link rel="canonical" href="https://librifree.lovable.app/" />
-        <meta property="og:title" content="Librifree – Biblioteca Digitale Gratuita" />
-        <meta property="og:description" content="Leggi gratuitamente migliaia di libri classici online." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://librifree.lovable.app/" />
-      </Helmet>
+      <SEOHead
+        title="Librifree – Biblioteca Digitale Gratuita di Libri Classici"
+        description="Leggi gratuitamente migliaia di libri classici online. Letteratura italiana, inglese, francese, russa e americana. Riassunti, analisi e approfondimenti."
+        path="/"
+        structuredData={[websiteSD, orgSD]}
+      />
 
       <div className="min-h-svh bg-background">
         {/* Header */}
@@ -111,6 +130,15 @@ const Index = () => {
           </Link>
         </section>
 
+        {/* SEO text block */}
+        <section className="px-6 sm:px-8 max-w-[1280px] mx-auto mb-12">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
+            Librifree è una biblioteca digitale gratuita che offre accesso a migliaia di libri classici della letteratura mondiale.
+            Troverai opere di letteratura italiana, inglese, francese, russa e americana, complete di riassunti, analisi letterarie,
+            citazioni e approfondimenti sui personaggi. Ideale per studenti, insegnanti e appassionati di lettura.
+          </p>
+        </section>
+
         {/* Content */}
         <div className="px-6 sm:px-8 max-w-[1280px] mx-auto pb-20">
           <BookRow title={t("popularBooks")} books={popular ?? []} isLoading={loadingPopular} />
@@ -130,7 +158,7 @@ const Index = () => {
                 {categories?.map((cat) => (
                   <Link
                     key={cat.id}
-                    to={`/biblioteca?categoria=${cat.slug}`}
+                    to={`/categoria/${cat.slug}`}
                     className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3.5 hover:bg-secondary transition-colors"
                   >
                     <span className="text-sm font-medium text-foreground">{cat.name}</span>
@@ -139,6 +167,21 @@ const Index = () => {
                 ))}
               </div>
             )}
+          </section>
+
+          {/* Alphabetical navigation */}
+          <section className="mb-12">
+            <h2 className="text-lg font-semibold text-foreground tracking-tight mb-5">
+              Indice Alfabetico
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <Link to="/libri-a" className="rounded-xl border border-border bg-background px-4 py-3.5 hover:bg-secondary transition-colors text-sm font-medium text-foreground">
+                Libri dalla A alla Z
+              </Link>
+              <Link to="/autori-a" className="rounded-xl border border-border bg-background px-4 py-3.5 hover:bg-secondary transition-colors text-sm font-medium text-foreground">
+                Autori dalla A alla Z
+              </Link>
+            </div>
           </section>
         </div>
       </div>

@@ -2,10 +2,10 @@ import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2, Tag } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { AdBanner } from "@/components/Monetization";
+import SEOHead from "@/components/SEOHead";
 
 function useTagWithBooks(tagSlug: string | undefined) {
   return useQuery({
@@ -49,16 +49,22 @@ const TagPage = () => {
   const tagType = data?.tag?.type || "theme";
   const typeLabels: Record<string, string> = { theme: "Tema", genre: "Genere", period: "Periodo storico" };
 
+  const tagPath = `/tag/${slug}`;
   const seoTitle = `${tagName} – Libri e Opere | Librifree`;
   const seoDesc = `Esplora i libri legati al ${typeLabels[tagType]?.toLowerCase() || "tema"} "${tagName}" su Librifree. Lettura gratuita online.`;
 
   return (
     <>
-      <Helmet>
-        <title>{seoTitle}</title>
-        <meta name="description" content={seoDesc} />
-        <link rel="canonical" href={`https://librifree.lovable.app/tag/${slug}`} />
-      </Helmet>
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        path={tagPath}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Biblioteca", url: "/biblioteca" },
+          { name: tagName, url: tagPath },
+        ]}
+      />
 
       <div className="min-h-svh bg-background text-foreground">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
@@ -100,7 +106,7 @@ const TagPage = () => {
                       {book.cover_url ? (
                         <img
                           src={book.cover_url}
-                          alt={`${t("coverAlt")} ${book.title}`}
+                          alt={`Copertina di ${book.title}`}
                           className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                           loading="lazy"
                         />

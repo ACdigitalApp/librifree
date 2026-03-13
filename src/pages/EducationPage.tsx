@@ -4,10 +4,11 @@ import { useBook } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2, GraduationCap, BookOpen, Users, Layers, BookMarked } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
+import SEOHead from "@/components/SEOHead";
+import { SITE_URL } from "@/lib/seo";
 
 type EduType = "summary_school" | "analysis_school" | "characters_explained";
 
@@ -69,25 +70,37 @@ const EducationPage = ({ type, titleKey, seoPrefix, urlPrefix, contentField }: E
 
   const content = (book as any)[contentField] as string | null;
   const pageTitle = `${t(titleKey as any)} ${book.title}`;
+  const pagePath = `/${urlPrefix}/${book.slug}`;
   const seoTitle = `${pageTitle} – ${book.author} | Librifree`;
-  const seoDesc = `${seoPrefix} "${book.title}" ${t("by")} ${book.author}. ${t("eduOptimized")} Librifree.`;
+  const seoDesc = `${seoPrefix} "${book.title}" di ${book.author}. Contenuto ottimizzato per studenti. Librifree.`;
 
-  const structuredData = {
+  const eduSD = {
     "@context": "https://schema.org",
-    "@type": "EducationalOccupationalProgram",
-    name: pageTitle,
+    "@type": "Article",
+    headline: pageTitle,
     description: seoDesc,
     about: { "@type": "Book", name: book.title, author: { "@type": "Person", name: book.author } },
-    url: `https://librifree.lovable.app/${urlPrefix}/${book.slug}`,
+    url: `${SITE_URL}${pagePath}`,
+    image: book.cover_url || undefined,
   };
+
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: book.title, url: `/libri/${book.slug}` },
+    { name: t(titleKey as any), url: pagePath },
+  ];
 
   return (
     <>
-      <Helmet>
-        <title>{seoTitle}</title>
-        <meta name="description" content={seoDesc} />
-        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-      </Helmet>
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        path={pagePath}
+        type="article"
+        image={book.cover_url || undefined}
+        structuredData={eduSD}
+        breadcrumbs={breadcrumbs}
+      />
 
       <div className="min-h-svh bg-background text-foreground">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
@@ -101,11 +114,22 @@ const EducationPage = ({ type, titleKey, seoPrefix, urlPrefix, contentField }: E
         </nav>
 
         <article className="px-6 sm:px-8 py-10 sm:py-16 max-w-[720px] mx-auto">
+          {/* Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
+            <ol className="flex flex-wrap items-center gap-1">
+              <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+              <li>/</li>
+              <li><Link to={`/libri/${book.slug}`} className="hover:text-foreground transition-colors">{book.title}</Link></li>
+              <li>/</li>
+              <li className="text-foreground font-medium">{t(titleKey as any)}</li>
+            </ol>
+          </nav>
+
           <header className="mb-12 text-center">
             {book.cover_url && (
               <img
                 src={book.cover_url}
-                alt={`${t("coverAlt")} ${book.title}`}
+                alt={`Copertina di ${book.title} di ${book.author}`}
                 className="mx-auto w-32 sm:w-40 rounded-lg shadow-xl mb-8"
                 loading="lazy"
               />
@@ -136,7 +160,6 @@ const EducationPage = ({ type, titleKey, seoPrefix, urlPrefix, contentField }: E
             </div>
           )}
 
-          {/* Cross-links */}
           <div className="mt-10 border-t border-border pt-8">
             <h2 className="text-sm font-semibold mb-3">{t("exploreMore")}</h2>
             <div className="flex flex-wrap gap-2">
@@ -163,7 +186,6 @@ const EducationPage = ({ type, titleKey, seoPrefix, urlPrefix, contentField }: E
             </div>
           </div>
 
-          {/* Monetization */}
           <div className="mt-8 space-y-6">
             <AdBanner slot={`edu-${type}`} />
             <AffiliateBookLink title={book.title} author={book.author} />

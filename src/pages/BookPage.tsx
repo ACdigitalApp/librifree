@@ -7,18 +7,10 @@ import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers, Clock, GraduationCap } from "lucide-react";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
+import { SITE_URL, slugifyAuthor } from "@/lib/seo";
 
 type FontSize = "sm" | "md" | "lg" | "xl";
-
-function slugifyAuthor(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 const BookPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -28,7 +20,6 @@ const BookPage = () => {
   const [fontSize, setFontSize] = useState<FontSize>("md");
   const [showToc, setShowToc] = useState(false);
 
-  // Track views
   useEffect(() => {
     if (slug) incrementBookViews(slug);
   }, [slug]);
@@ -75,16 +66,28 @@ const BookPage = () => {
     );
   }
 
-  const structuredData = {
+  const seoTitle = `${book.title} di ${book.author} | Librifree`;
+  const seoDesc = book.description || `Leggi "${book.title}" di ${book.author} gratuitamente su Librifree. Testo integrale, riassunto, analisi e approfondimenti.`;
+  const bookPath = `/libri/${book.slug}`;
+
+  const bookSD = {
     "@context": "https://schema.org",
     "@type": "Book",
     name: book.title,
     author: { "@type": "Person", name: book.author },
-    description: book.description || "",
-    url: `https://librifree.lovable.app/libri/${book.slug}`,
-    image: book.cover_url || "",
+    description: book.description || seoDesc,
+    url: `${SITE_URL}${bookPath}`,
+    image: book.cover_url || undefined,
     inLanguage: book.language || "it",
+    ...(book.categories ? { genre: book.categories.name } : {}),
   };
+
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Biblioteca", url: "/biblioteca" },
+    ...(book.categories ? [{ name: book.categories.name, url: `/categoria/${book.categories.slug}` }] : []),
+    { name: book.title, url: bookPath },
+  ];
 
   const seoLinks = [
     { to: `/riassunto/${book.slug}`, label: t("readSummary"), icon: BookMarked },
@@ -101,11 +104,15 @@ const BookPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>{`${book.title} – ${book.author} | Librifree`}</title>
-        <meta name="description" content={book.description || `Leggi ${book.title} di ${book.author} gratuitamente su Librifree.`} />
-        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-      </Helmet>
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        path={bookPath}
+        type="book"
+        image={book.cover_url || undefined}
+        structuredData={bookSD}
+        breadcrumbs={breadcrumbs}
+      />
 
       <div className={`min-h-svh transition-colors ${darkMode ? "reader-dark bg-[hsl(0,0%,8%)] text-[hsl(0,0%,85%)]" : "bg-background text-foreground"}`}>
         <nav className={`sticky top-0 z-10 backdrop-blur-md border-b ${darkMode ? "bg-[hsl(0,0%,8%)]/80 border-[hsl(0,0%,20%)]" : "bg-background/80 border-border"}`}>
@@ -151,20 +158,37 @@ const BookPage = () => {
         )}
 
         <article className={`px-6 py-10 sm:py-16 max-w-[65ch] mx-auto reader-${fontSize}`}>
+          {/* Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
+            <ol className="flex flex-wrap items-center gap-1">
+              <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+              <li>/</li>
+              <li><Link to="/biblioteca" className="hover:text-foreground transition-colors">Biblioteca</Link></li>
+              {book.categories && (
+                <>
+                  <li>/</li>
+                  <li><Link to={`/categoria/${book.categories.slug}`} className="hover:text-foreground transition-colors">{book.categories.name}</Link></li>
+                </>
+              )}
+              <li>/</li>
+              <li className="text-foreground font-medium truncate max-w-[200px]">{book.title}</li>
+            </ol>
+          </nav>
+
           <header className="mb-12 text-center">
             {book.cover_url && (
-              <img src={book.cover_url} alt={`${t("coverAlt")} ${book.title}`} className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8" />
+              <img src={book.cover_url} alt={`Copertina di ${book.title} di ${book.author}`} className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8" />
             )}
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ textWrap: "balance" } as React.CSSProperties}>
               {book.title}
             </h1>
-            <Link to={`/author/${slugifyAuthor(book.author)}`} className="mt-2 text-base text-muted-foreground hover:text-foreground transition-colors inline-block">
+            <Link to={`/autore/${slugifyAuthor(book.author)}`} className="mt-2 text-base text-muted-foreground hover:text-foreground transition-colors inline-block">
               {book.author}
             </Link>
             {book.categories && (
-              <span className={`block mt-3 text-xs px-3 py-1 rounded-full ${darkMode ? "bg-[hsl(0,0%,15%)]" : "bg-secondary"} text-muted-foreground inline-block`}>
+              <Link to={`/categoria/${book.categories.slug}`} className={`block mt-3 text-xs px-3 py-1 rounded-full ${darkMode ? "bg-[hsl(0,0%,15%)]" : "bg-secondary"} text-muted-foreground inline-block hover:opacity-80 transition-opacity`}>
                 {book.categories.name}
-              </span>
+              </Link>
             )}
             {book.description && (
               <p className="mt-4 text-sm text-muted-foreground italic max-w-lg mx-auto" style={{ textWrap: "balance" } as React.CSSProperties}>
@@ -172,7 +196,6 @@ const BookPage = () => {
               </p>
             )}
 
-            {/* Primary CTA: Summary */}
             <div className="mt-6">
               <Link
                 to={`/riassunto/${book.slug}`}
@@ -183,7 +206,6 @@ const BookPage = () => {
               </Link>
             </div>
 
-            {/* SEO page links */}
             <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
               {seoLinks.map(({ to, label, icon: Icon }) => (
                 <Link
@@ -212,7 +234,6 @@ const BookPage = () => {
             <div className="prose-book" dangerouslySetInnerHTML={{ __html: processedContent }} />
           )}
 
-          {/* Monetization */}
           <div className="mt-12 space-y-6">
             <AdBanner slot="book-mid" />
             <AffiliateBookLink title={book.title} author={book.author} />
