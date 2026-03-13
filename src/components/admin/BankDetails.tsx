@@ -188,7 +188,6 @@ const BankDetails = () => {
                 maxLength={11}
               />
             </div>
-          </div>
             <div className="space-y-1.5 md:col-span-2">
               <Label htmlFor="notes" className="text-xs">Note / Riferimenti (es. codice partner Amazon)</Label>
               <textarea
