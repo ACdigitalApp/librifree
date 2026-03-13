@@ -52,6 +52,37 @@ const AdminPanel = () => {
   const { data: stats, isLoading: loadingStats } = useAdminStats();
   const { data: booksData, isLoading: loadingBooks } = useAdminBooks({ page, search, sortBy: adminSortBy, pageSize: adminPageSize });
 
+  // Load saved cover instructions from admin_settings
+  useEffect(() => {
+    const loadCoverInstructions = async () => {
+      const { data } = await supabase
+        .from("admin_settings")
+        .select("setting_value")
+        .eq("setting_key", "cover_instructions")
+        .maybeSingle();
+      if (data?.setting_value) {
+        setCommand(data.setting_value);
+      }
+    };
+    if (isAdmin) loadCoverInstructions();
+  }, [isAdmin]);
+
+  // Save cover instructions when they change (debounced)
+  useEffect(() => {
+    if (!isAdmin) return;
+    const timer = setTimeout(async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase
+        .from("admin_settings")
+        .upsert(
+          { setting_key: "cover_instructions", setting_value: command, user_id: user.id },
+          { onConflict: "setting_key,user_id" }
+        );
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [command, isAdmin]);
+
   useEffect(() => {
     if (!checkingAdmin && isAdmin === false) {
       navigate("/admin/login");
