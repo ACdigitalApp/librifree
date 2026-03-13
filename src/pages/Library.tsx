@@ -118,6 +118,16 @@ const Library = () => {
                 className="pl-9 h-10 text-sm rounded-full border-border bg-secondary"
               />
             </div>
+            <div className="relative flex-1 sm:max-w-[200px]">
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Cerca per N° libro"
+                value={bookCodeSearch}
+                onChange={(e) => handleBookCodeSearch(e.target.value)}
+                inputMode="numeric"
+                className="pl-9 h-10 text-sm rounded-full border-border bg-secondary"
+              />
+            </div>
             <Select value={categorySlug} onValueChange={(v) => setCategorySlug(v === "all" ? "" : v)}>
               <SelectTrigger className="w-full sm:w-[200px] h-10 text-sm rounded-full border-border bg-secondary">
                 <SelectValue placeholder={t("allCategories")} />
