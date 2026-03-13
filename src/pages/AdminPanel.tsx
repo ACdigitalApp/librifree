@@ -264,6 +264,10 @@ const AdminPanel = () => {
               Queste istruzioni vengono inviate automaticamente quando clicchi "Generate AI Covers".
             </p>
             <div className="flex items-center gap-2 mt-2">
+              <Button size="sm" onClick={handleGenerateAICovers} disabled={importLoading || !command.trim()}>
+                {importLoading && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                Esegui Comando
+              </Button>
               <Button size="sm" variant="outline" onClick={() => setCommand("")} disabled={!command.trim()}>
                 Pulisci
               </Button>

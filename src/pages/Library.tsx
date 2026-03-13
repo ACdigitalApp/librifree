@@ -22,6 +22,7 @@ const Library = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categorySlug, setCategorySlug] = useState(initialCategory);
   const [sortBy, setSortBy] = useState<"author" | "author_desc" | "title" | "title_desc" | "views" | "created_at">("author");
+  const [pageSize, setPageSize] = useState(25);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearch = useCallback((value: string) => {
@@ -37,7 +38,7 @@ const Library = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useBooks({ search: debouncedSearch, categorySlug, sortBy });
+  } = useBooks({ search: debouncedSearch, categorySlug, sortBy, pageSize });
 
   const allBooks = data?.pages.flatMap((p) => p.books) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
@@ -104,11 +105,24 @@ const Library = () => {
           </Select>
         </div>
 
-        {/* Count */}
+        {/* Count + Page Size */}
         {!isLoading && (
-          <p className="text-xs text-muted-foreground mb-6">
-            {totalCount} {totalCount === 1 ? t("bookSingular") : t("bookPlural")}
-          </p>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-xs text-muted-foreground">
+              {totalCount} {totalCount === 1 ? t("bookSingular") : t("bookPlural")}
+            </p>
+            <Select value={String(pageSize)} onValueChange={(v) => setPageSize(v === "all" ? 9999 : Number(v))}>
+              <SelectTrigger className="w-[100px] h-8 text-xs rounded-full border-border bg-secondary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="all">Tutti</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
         {/* Loading */}
