@@ -5,6 +5,7 @@ import { useAdminStats, useAdminBooks, useIsAdmin, useCategories } from "@/hooks
 import { deleteBook, updateBook } from "@/lib/api";
 import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal } from "lucide-react";
 import MassImportTool from "@/components/admin/MassImportTool";
+import BankDetails from "@/components/admin/BankDetails";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -228,6 +229,9 @@ const AdminPanel = () => {
             <p className="text-xs text-muted-foreground">{stats?.topBooks?.[0]?.views} views</p>
           </div>
         </div>
+
+        {/* Bank Details */}
+        <BankDetails />
 
         {/* Mass Import Tool */}
         <MassImportTool />
