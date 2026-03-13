@@ -1,0 +1,1 @@
+UPDATE books SET cover_url = 'no-cover' WHERE id = '28fcbaa5-1d89-4cf9-8226-7bf6e2a1ebe2';
