@@ -9,6 +9,14 @@ import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Mone
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 import SEOHead from "@/components/SEOHead";
 import { SITE_URL, slugifyAuthor } from "@/lib/seo";
+import Footer from "@/components/Footer";
+import BookCoverPlaceholder from "@/components/BookCoverPlaceholder";
+
+function isPlaceholderCover(url: string | null) {
+  if (!url || url === "no-cover") return true;
+  if (url.includes("gutenberg.org") && url.includes("/pg")) return true;
+  return false;
+}
 
 type FontSize = "sm" | "md" | "lg" | "xl";
 
@@ -114,7 +122,7 @@ const BookPage = () => {
         breadcrumbs={breadcrumbs}
       />
 
-      <div className={`min-h-svh transition-colors ${darkMode ? "reader-dark bg-[hsl(0,0%,8%)] text-[hsl(0,0%,85%)]" : "bg-background text-foreground"}`}>
+      <div className={`min-h-svh flex flex-col transition-colors ${darkMode ? "reader-dark bg-[hsl(0,0%,8%)] text-[hsl(0,0%,85%)]" : "bg-background text-foreground"}`}>
         <nav className={`sticky top-0 z-10 backdrop-blur-md border-b ${darkMode ? "bg-[hsl(0,0%,8%)]/80 border-[hsl(0,0%,20%)]" : "bg-background/80 border-border"}`}>
           <div className="flex items-center justify-between px-6 py-3 max-w-[65ch] mx-auto">
             <Link to="/biblioteca" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -176,8 +184,12 @@ const BookPage = () => {
           </nav>
 
           <header className="mb-12 text-center">
-            {book.cover_url && (
-              <img src={book.cover_url} alt={`Copertina di ${book.title} di ${book.author}`} className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8" />
+            {!isPlaceholderCover(book.cover_url) ? (
+              <img src={book.cover_url!} alt={`Copertina di ${book.title} di ${book.author}`} className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8" />
+            ) : (
+              <div className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8 aspect-[2/3] overflow-hidden">
+                <BookCoverPlaceholder title={book.title} author={book.author} />
+              </div>
             )}
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ textWrap: "balance" } as React.CSSProperties}>
               {book.title}
@@ -240,6 +252,7 @@ const BookPage = () => {
             <BookRecommendations categoryId={book.category_id} slug={book.slug} />
           </div>
         </article>
+        <Footer />
       </div>
     </>
   );

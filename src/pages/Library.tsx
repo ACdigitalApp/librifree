@@ -14,6 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import SEOHead from "@/components/SEOHead";
+import Footer from "@/components/Footer";
+import BookCoverPlaceholder from "@/components/BookCoverPlaceholder";
+
+function isPlaceholderCover(url: string | null) {
+  if (!url || url === "no-cover") return true;
+  if (url.includes("gutenberg.org") && url.includes("/pg")) return true;
+  return false;
+}
 
 const Library = () => {
   const { t } = useLanguage();
@@ -69,13 +77,18 @@ const Library = () => {
         ]}
       />
 
-      <div className="min-h-svh">
+      <div className="min-h-svh flex flex-col">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
           <div className="flex items-center justify-between px-6 sm:px-8 py-3 max-w-[1280px] mx-auto">
-            <Link to="/" className="text-sm font-semibold tracking-tight hover:opacity-70 transition-opacity">
+              <Link to="/" className="text-sm font-semibold tracking-tight hover:opacity-70 transition-opacity">
               Librifree
             </Link>
-            <LanguageSelector />
+            <div className="flex items-center gap-4">
+              <Link to="/chi-siamo" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Chi siamo
+              </Link>
+              <LanguageSelector />
+            </div>
           </div>
         </nav>
 
@@ -159,21 +172,19 @@ const Library = () => {
                 <div key={book.id} className="group">
                   <Link to={`/libri/${book.slug}`}>
                     <div className="overflow-hidden rounded-lg bg-secondary aspect-[2/3]">
-                      {book.cover_url ? (
+                      {!isPlaceholderCover(book.cover_url) ? (
                         <img
-                          src={book.cover_url}
+                          src={book.cover_url!}
                           alt={`Copertina di ${book.title} di ${book.author}`}
                           className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center p-4">
-                          <span className="text-muted-foreground text-xs text-center">{book.title}</span>
-                        </div>
+                        <BookCoverPlaceholder title={book.title} author={book.author} />
                       )}
                     </div>
                     <div className="mt-2.5">
-                      <p className="text-sm font-medium text-foreground truncate leading-tight">{book.title}</p>
+                      <p className="text-sm font-medium text-foreground leading-tight line-clamp-2">{book.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{book.author}</p>
                     </div>
                   </Link>
@@ -214,6 +225,7 @@ const Library = () => {
             </div>
           )}
         </div>
+        <Footer />
       </div>
     </>
   );

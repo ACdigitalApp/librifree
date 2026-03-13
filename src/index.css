@@ -63,6 +63,12 @@
   }
 }
 
+/* Hide Lovable badge */
+[data-lovable-badge],
+a[href*="lovable.dev"][style*="fixed"] {
+  display: none !important;
+}
+
 /* Reader prose styling */
 .prose-book {
   font-family: 'Newsreader', Georgia, serif;
