@@ -65,11 +65,7 @@ function BookOfTheDay() {
         className="flex gap-5 items-center rounded-xl border border-border bg-secondary/50 p-4 hover:bg-secondary transition-colors"
       >
         <div className="w-20 sm:w-24 flex-shrink-0 rounded-lg overflow-hidden aspect-[2/3]">
-          {!isPlaceholderCover(book.cover_url) ? (
-            <img src={book.cover_url!} alt={book.title} className="w-full h-full object-cover" />
-          ) : (
-            <BookCoverPlaceholder title={book.title} author={book.author} />
-          )}
+          <BookCover title={book.title} author={book.author} coverUrl={book.cover_url} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-foreground text-base leading-tight line-clamp-2">{book.title}</p>
