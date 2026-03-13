@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminStats, useAdminBooks, useIsAdmin, useCategories } from "@/hooks/useBooks";
 import { deleteBook, updateBook } from "@/lib/api";
-import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal } from "lucide-react";
+import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal, ImagePlus } from "lucide-react";
 import MassImportTool from "@/components/admin/MassImportTool";
 import BankDetails from "@/components/admin/BankDetails";
 import { Input } from "@/components/ui/input";
