@@ -1,0 +1,1 @@
+UPDATE books SET cover_url = 'no-cover' WHERE slug = 'ultime-lettere-di-jacopo-ortis-ugo-foscolo';
