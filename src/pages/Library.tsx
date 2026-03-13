@@ -15,13 +15,7 @@ import {
 } from "@/components/ui/select";
 import SEOHead from "@/components/SEOHead";
 import Footer from "@/components/Footer";
-import BookCoverPlaceholder from "@/components/BookCoverPlaceholder";
-
-function isPlaceholderCover(url: string | null) {
-  if (!url || url === "no-cover") return true;
-  if (url.includes("gutenberg.org") && url.includes("/pg")) return true;
-  return false;
-}
+import BookCover from "@/components/BookCover";
 
 const Library = () => {
   const { t } = useLanguage();
