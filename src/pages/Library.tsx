@@ -30,10 +30,19 @@ const Library = () => {
   const [pageSize, setPageSize] = useState(25);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const codeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }, []);
+  const handleBookCodeSearch = useCallback((value: string) => {
+    const cleaned = value.replace(/\D/g, "");
+    setBookCodeSearch(cleaned);
+    if (codeTimerRef.current) clearTimeout(codeTimerRef.current);
+    codeTimerRef.current = setTimeout(() => {
+      setDebouncedBookCode(cleaned ? parseInt(cleaned, 10) : undefined);
+    }, 300);
   }, []);
 
   const { data: categories } = useCategories();
