@@ -230,6 +230,9 @@ const AdminPanel = () => {
           </div>
         </div>
 
+        {/* Bank Details */}
+        <BankDetails />
+
         {/* Mass Import Tool */}
         <MassImportTool />
 
