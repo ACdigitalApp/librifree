@@ -11,9 +11,10 @@ interface BankData {
   bic_swift: string;
   account_holder: string;
   bank_name: string;
+  notes: string;
 }
 
-const BANK_KEYS: (keyof BankData)[] = ["iban", "bic_swift", "account_holder", "bank_name"];
+const BANK_KEYS: (keyof BankData)[] = ["iban", "bic_swift", "account_holder", "bank_name", "notes"];
 
 const BankDetails = () => {
   const { toast } = useToast();
