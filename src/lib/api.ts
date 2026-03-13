@@ -27,7 +27,7 @@ export async function fetchBooks({
 } = {}) {
   let query = supabase
     .from("books")
-    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)", { count: "exact" });
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, book_code, categories(*)", { count: "exact" });
 
   if (search) {
     query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
