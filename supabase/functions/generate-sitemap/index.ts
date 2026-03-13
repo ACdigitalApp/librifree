@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SITE_URL = "https://librifree.lovable.app";
+const SITE_URL = "https://librifree.it";
 const MAX_URLS = 1000;
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("");
 
