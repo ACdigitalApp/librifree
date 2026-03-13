@@ -23,6 +23,8 @@ const Library = () => {
   const initialCategory = searchParams.get("categoria") || "";
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [bookCodeSearch, setBookCodeSearch] = useState("");
+  const [debouncedBookCode, setDebouncedBookCode] = useState<number | undefined>();
   const [categorySlug, setCategorySlug] = useState(initialCategory);
   const [sortBy, setSortBy] = useState<"author" | "author_desc" | "title" | "title_desc" | "views" | "created_at">("author");
   const [pageSize, setPageSize] = useState(25);
