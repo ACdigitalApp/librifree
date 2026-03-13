@@ -45,7 +45,7 @@ const BankDetails = () => {
         .in("setting_key", BANK_KEYS);
 
       if (settings) {
-        const bankData: BankData = { iban: "", bic_swift: "", account_holder: "", bank_name: "" };
+        const bankData: BankData = { iban: "", bic_swift: "", account_holder: "", bank_name: "", notes: "" };
         settings.forEach((s) => {
           if (BANK_KEYS.includes(s.setting_key as keyof BankData)) {
             bankData[s.setting_key as keyof BankData] = s.setting_value || "";
