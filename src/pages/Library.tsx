@@ -104,11 +104,24 @@ const Library = () => {
           </Select>
         </div>
 
-        {/* Count */}
+        {/* Count + Page Size */}
         {!isLoading && (
-          <p className="text-xs text-muted-foreground mb-6">
-            {totalCount} {totalCount === 1 ? t("bookSingular") : t("bookPlural")}
-          </p>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-xs text-muted-foreground">
+              {totalCount} {totalCount === 1 ? t("bookSingular") : t("bookPlural")}
+            </p>
+            <Select value={String(pageSize)} onValueChange={(v) => setPageSize(v === "all" ? 9999 : Number(v))}>
+              <SelectTrigger className="w-[100px] h-8 text-xs rounded-full border-border bg-secondary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="all">Tutti</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
         {/* Loading */}
