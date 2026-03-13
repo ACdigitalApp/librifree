@@ -94,6 +94,7 @@ const App = () => (
                 {/* Core pages */}
                 <Route path="/" element={<Index />} />
                 <Route path="/biblioteca" element={<Library />} />
+                <Route path="/chi-siamo" element={<ChiSiamo />} />
 
                 {/* Book pages */}
                 <Route path="/libri/:slug" element={<BookPage />} />
