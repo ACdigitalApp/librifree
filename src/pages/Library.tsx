@@ -192,6 +192,9 @@ const Library = () => {
                     <div className="mt-2.5">
                       <p className="text-sm font-medium text-foreground leading-tight line-clamp-2">{book.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{book.author}</p>
+                      {(book as any).book_code && (
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">N° {(book as any).book_code}</p>
+                      )}
                     </div>
                   </Link>
                   <Link

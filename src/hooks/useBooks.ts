@@ -17,17 +17,19 @@ export function useBooks({
   language = "",
   sortBy = "author" as "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at",
   pageSize,
+  bookCode,
 }: {
   search?: string;
   categorySlug?: string;
   language?: string;
   sortBy?: "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at";
   pageSize?: number;
+  bookCode?: number;
 } = {}) {
   return useInfiniteQuery({
-    queryKey: ["books", search, categorySlug, language, sortBy, pageSize],
+    queryKey: ["books", search, categorySlug, language, sortBy, pageSize, bookCode],
     queryFn: ({ pageParam = 0 }) =>
-      fetchBooks({ page: pageParam, search, categorySlug, language, sortBy, pageSize }),
+      fetchBooks({ page: pageParam, search, categorySlug, language, sortBy, pageSize, bookCode }),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.hasMore ? allPages.length : undefined,
     initialPageParam: 0,
