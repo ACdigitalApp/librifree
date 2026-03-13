@@ -184,7 +184,7 @@ const Library = () => {
                       )}
                     </div>
                     <div className="mt-2.5">
-                      <p className="text-sm font-medium text-foreground truncate leading-tight">{book.title}</p>
+                      <p className="text-sm font-medium text-foreground leading-tight line-clamp-2">{book.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{book.author}</p>
                     </div>
                   </Link>
