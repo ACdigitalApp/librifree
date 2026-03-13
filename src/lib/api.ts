@@ -16,14 +16,15 @@ export async function fetchBooks({
   categorySlug = "",
   language = "",
   sortBy = "author",
+  pageSize = PAGE_SIZE,
 }: {
   page?: number;
   search?: string;
   categorySlug?: string;
   language?: string;
   sortBy?: "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at";
+  pageSize?: number;
 } = {}) {
-  // Only select listing columns (exclude heavy content/summary fields)
   let query = supabase
     .from("books")
     .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)", { count: "exact" });
@@ -51,7 +52,7 @@ export async function fetchBooks({
   const ascending = sortBy === "title" || sortBy === "author";
   query = query
     .order(column, { ascending })
-    .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    .range(page * pageSize, (page + 1) * pageSize - 1);
 
   const { data, error, count } = await query;
   if (error) throw error;
@@ -59,8 +60,8 @@ export async function fetchBooks({
   return {
     books: (data as BookWithCategory[]) ?? [],
     totalCount: count ?? 0,
-    pageSize: PAGE_SIZE,
-    hasMore: (count ?? 0) > (page + 1) * PAGE_SIZE,
+    pageSize,
+    hasMore: (count ?? 0) > (page + 1) * pageSize,
   };
 }
 
