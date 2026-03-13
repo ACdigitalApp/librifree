@@ -9,6 +9,14 @@ import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Mone
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 import SEOHead from "@/components/SEOHead";
 import { SITE_URL, slugifyAuthor } from "@/lib/seo";
+import Footer from "@/components/Footer";
+import BookCoverPlaceholder from "@/components/BookCoverPlaceholder";
+
+function isPlaceholderCover(url: string | null) {
+  if (!url || url === "no-cover") return true;
+  if (url.includes("gutenberg.org") && url.includes("/pg")) return true;
+  return false;
+}
 
 type FontSize = "sm" | "md" | "lg" | "xl";
 
