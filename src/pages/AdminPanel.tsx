@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminStats, useAdminBooks, useIsAdmin, useCategories } from "@/hooks/useBooks";
 import { deleteBook, updateBook } from "@/lib/api";
-import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal } from "lucide-react";
+import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal, ImagePlus } from "lucide-react";
 import MassImportTool from "@/components/admin/MassImportTool";
 import BankDetails from "@/components/admin/BankDetails";
 import { Input } from "@/components/ui/input";
@@ -328,17 +328,53 @@ const AdminPanel = () => {
           </div>
           <div className="border-t border-border pt-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Terminal className="h-4 w-4" /> Istruzioni Copertine
+              <Terminal className="h-4 w-4" /> Istruzioni
             </h3>
-            <Textarea
-              placeholder="Es: Non usare le stesse cover per gli elenchi, usa stili diversi per genere..."
-
-              value={command}
-              onChange={(e) => setCommand(e.target.value)}
-              className="min-h-[80px] text-sm mb-3"
-            />
+            <div className="relative">
+              <Textarea
+                placeholder="Es: Non usare le stesse cover per gli elenchi, usa stili diversi per genere..."
+                value={command}
+                onChange={(e) => setCommand(e.target.value)}
+                className="min-h-[120px] text-sm mb-1"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                id="instruction-image-upload"
+                onChange={async (e) => {
+                  const files = e.target.files;
+                  if (!files || files.length === 0) return;
+                  for (const file of Array.from(files)) {
+                    const ext = file.name.split(".").pop() || "png";
+                    const fileName = `instructions/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                    const { error: uploadError } = await supabase.storage
+                      .from("book-covers")
+                      .upload(fileName, file, { contentType: file.type, upsert: true });
+                    if (uploadError) {
+                      toast({ title: "Errore upload immagine", description: uploadError.message, variant: "destructive" });
+                      continue;
+                    }
+                    const { data: urlData } = supabase.storage.from("book-covers").getPublicUrl(fileName);
+                    setCommand((prev) => prev + `\n![image](${urlData.publicUrl})\n`);
+                  }
+                  e.target.value = "";
+                }}
+              />
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs"
+                onClick={() => document.getElementById("instruction-image-upload")?.click()}
+              >
+                <ImagePlus className="h-3 w-3 mr-1" /> Aggiungi immagine
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground">
-              Queste istruzioni vengono inviate automaticamente quando clicchi "Generate AI Covers".
+              Queste istruzioni vengono inviate automaticamente con i comandi. Puoi inserire testo e immagini.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <Button size="sm" onClick={handleGenerateAICovers} disabled={importLoading || !command.trim()}>
