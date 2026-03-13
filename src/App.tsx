@@ -21,6 +21,7 @@ const TagPage = lazy(() => import("./pages/TagPage.tsx"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin.tsx"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const ChiSiamo = lazy(() => import("./pages/ChiSiamo.tsx"));
 
 // SEO content pages
 // SEO content page lazy imports
