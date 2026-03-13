@@ -252,6 +252,7 @@ const BookPage = () => {
             <BookRecommendations categoryId={book.category_id} slug={book.slug} />
           </div>
         </article>
+        <Footer />
       </div>
     </>
   );
