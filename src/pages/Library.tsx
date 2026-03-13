@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useBooks, useCategories } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { Search, Loader2, BookMarked } from "lucide-react";
+import { Search, Loader2, BookMarked, Hash } from "lucide-react";
 import { AdBanner } from "@/components/Monetization";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,15 +23,26 @@ const Library = () => {
   const initialCategory = searchParams.get("categoria") || "";
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [bookCodeSearch, setBookCodeSearch] = useState("");
+  const [debouncedBookCode, setDebouncedBookCode] = useState<number | undefined>();
   const [categorySlug, setCategorySlug] = useState(initialCategory);
   const [sortBy, setSortBy] = useState<"author" | "author_desc" | "title" | "title_desc" | "views" | "created_at">("author");
   const [pageSize, setPageSize] = useState(25);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const codeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }, []);
+  const handleBookCodeSearch = useCallback((value: string) => {
+    const cleaned = value.replace(/\D/g, "");
+    setBookCodeSearch(cleaned);
+    if (codeTimerRef.current) clearTimeout(codeTimerRef.current);
+    codeTimerRef.current = setTimeout(() => {
+      setDebouncedBookCode(cleaned ? parseInt(cleaned, 10) : undefined);
+    }, 300);
   }, []);
 
   const { data: categories } = useCategories();
@@ -41,7 +52,7 @@ const Library = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useBooks({ search: debouncedSearch, categorySlug, sortBy, pageSize });
+  } = useBooks({ search: debouncedSearch, categorySlug, sortBy, pageSize, bookCode: debouncedBookCode });
 
   const allBooks = data?.pages.flatMap((p) => p.books) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
@@ -104,6 +115,16 @@ const Library = () => {
                 placeholder={t("searchPlaceholder")}
                 value={search}
                 onChange={(e) => handleSearch(e.target.value)}
+                className="pl-9 h-10 text-sm rounded-full border-border bg-secondary"
+              />
+            </div>
+            <div className="relative flex-1 sm:max-w-[200px]">
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Cerca per N° libro"
+                value={bookCodeSearch}
+                onChange={(e) => handleBookCodeSearch(e.target.value)}
+                inputMode="numeric"
                 className="pl-9 h-10 text-sm rounded-full border-border bg-secondary"
               />
             </div>
@@ -171,6 +192,9 @@ const Library = () => {
                     <div className="mt-2.5">
                       <p className="text-sm font-medium text-foreground leading-tight line-clamp-2">{book.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{book.author}</p>
+                      {(book as any).book_code && (
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">N° {(book as any).book_code}</p>
+                      )}
                     </div>
                   </Link>
                   <Link

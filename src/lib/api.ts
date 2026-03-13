@@ -17,6 +17,7 @@ export async function fetchBooks({
   language = "",
   sortBy = "author",
   pageSize = PAGE_SIZE,
+  bookCode,
 }: {
   page?: number;
   search?: string;
@@ -24,10 +25,11 @@ export async function fetchBooks({
   language?: string;
   sortBy?: "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at";
   pageSize?: number;
+  bookCode?: number;
 } = {}) {
   let query = supabase
     .from("books")
-    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)", { count: "exact" });
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, book_code, categories(*)", { count: "exact" });
 
   if (search) {
     query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
@@ -46,6 +48,10 @@ export async function fetchBooks({
 
   if (language) {
     query = query.eq("language", language);
+  }
+
+  if (bookCode) {
+    query = query.eq("book_code", bookCode);
   }
 
   const column = sortBy.replace("_desc", "") as string;
@@ -87,7 +93,7 @@ export async function fetchCategories() {
 export async function fetchRecentBooks(limit = 12) {
   const { data, error } = await supabase
     .from("books")
-    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)")
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, book_code, categories(*)")
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -97,7 +103,7 @@ export async function fetchRecentBooks(limit = 12) {
 export async function fetchPopularBooks(limit = 12) {
   const { data, error } = await supabase
     .from("books")
-    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)")
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, book_code, categories(*)")
     .order("views", { ascending: false })
     .limit(limit);
   if (error) throw error;

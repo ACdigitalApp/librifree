@@ -4,7 +4,7 @@ import { useBook } from "@/hooks/useBooks";
 import { incrementBookViews } from "@/lib/api";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers, Clock, GraduationCap } from "lucide-react";
+import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers, Clock, GraduationCap, Hash } from "lucide-react";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 import SEOHead from "@/components/SEOHead";
@@ -184,6 +184,12 @@ const BookPage = () => {
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ textWrap: "balance" } as React.CSSProperties}>
               {book.title}
             </h1>
+            {(book as any).book_code && (
+              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
+                <Hash className="w-3 h-3" />
+                N° {(book as any).book_code}
+              </span>
+            )}
             <Link to={`/autore/${slugifyAuthor(book.author)}`} className="mt-2 text-base text-muted-foreground hover:text-foreground transition-colors inline-block">
               {book.author}
             </Link>

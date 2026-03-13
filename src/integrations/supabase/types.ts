@@ -74,6 +74,7 @@ export type Database = {
       books: {
         Row: {
           author: string
+          book_code: number
           category_id: string | null
           chapters: string | null
           characters: string | null
@@ -99,6 +100,7 @@ export type Database = {
         }
         Insert: {
           author: string
+          book_code?: number
           category_id?: string | null
           chapters?: string | null
           characters?: string | null
@@ -124,6 +126,7 @@ export type Database = {
         }
         Update: {
           author?: string
+          book_code?: number
           category_id?: string | null
           chapters?: string | null
           characters?: string | null
@@ -236,6 +239,7 @@ export type Database = {
         Args: { author_slug: string }
         Returns: {
           author: string
+          book_code: number
           category_id: string | null
           chapters: string | null
           characters: string | null

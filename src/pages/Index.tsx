@@ -19,6 +19,9 @@ function BookCard({ book }: { book: BookWithCategory }) {
       </div>
       <p className="mt-2 text-sm font-medium text-foreground leading-tight line-clamp-2">{book.title}</p>
       <p className="text-xs text-muted-foreground mt-0.5 truncate">{book.author}</p>
+      {(book as any).book_code && (
+        <p className="text-[10px] text-muted-foreground/60 mt-0.5">N° {(book as any).book_code}</p>
+      )}
     </Link>
   );
 }
