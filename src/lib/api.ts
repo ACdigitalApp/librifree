@@ -17,6 +17,7 @@ export async function fetchBooks({
   language = "",
   sortBy = "author",
   pageSize = PAGE_SIZE,
+  bookCode,
 }: {
   page?: number;
   search?: string;
