@@ -9,29 +9,13 @@ import type { BookWithCategory } from "@/lib/api";
 import SEOHead from "@/components/SEOHead";
 import { SITE_URL } from "@/lib/seo";
 import Footer from "@/components/Footer";
-import BookCoverPlaceholder from "@/components/BookCoverPlaceholder";
-
-function isPlaceholderCover(url: string | null) {
-  if (!url || url === "no-cover") return true;
-  // Gutenberg placeholder covers are small solid-color images
-  if (url.includes("gutenberg.org") && url.includes("/pg")) return true;
-  return false;
-}
+import BookCover from "@/components/BookCover";
 
 function BookCard({ book }: { book: BookWithCategory }) {
   return (
     <Link to={`/libri/${book.slug}`} className="group flex-shrink-0 w-[140px] sm:w-[160px]">
       <div className="overflow-hidden rounded-lg bg-secondary aspect-[2/3]">
-        {!isPlaceholderCover(book.cover_url) ? (
-          <img
-            src={book.cover_url!}
-            alt={`Copertina di ${book.title} di ${book.author}`}
-            className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-            loading="lazy"
-          />
-        ) : (
-          <BookCoverPlaceholder title={book.title} author={book.author} />
-        )}
+        <BookCover title={book.title} author={book.author} coverUrl={book.cover_url} className="transition-transform duration-200 group-hover:scale-[1.03]" />
       </div>
       <p className="mt-2 text-sm font-medium text-foreground leading-tight line-clamp-2">{book.title}</p>
       <p className="text-xs text-muted-foreground mt-0.5 truncate">{book.author}</p>
@@ -81,11 +65,7 @@ function BookOfTheDay() {
         className="flex gap-5 items-center rounded-xl border border-border bg-secondary/50 p-4 hover:bg-secondary transition-colors"
       >
         <div className="w-20 sm:w-24 flex-shrink-0 rounded-lg overflow-hidden aspect-[2/3]">
-          {!isPlaceholderCover(book.cover_url) ? (
-            <img src={book.cover_url!} alt={book.title} className="w-full h-full object-cover" />
-          ) : (
-            <BookCoverPlaceholder title={book.title} author={book.author} />
-          )}
+          <BookCover title={book.title} author={book.author} coverUrl={book.cover_url} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-foreground text-base leading-tight line-clamp-2">{book.title}</p>

@@ -10,13 +10,7 @@ import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 import SEOHead from "@/components/SEOHead";
 import { SITE_URL, slugifyAuthor } from "@/lib/seo";
 import Footer from "@/components/Footer";
-import BookCoverPlaceholder from "@/components/BookCoverPlaceholder";
-
-function isPlaceholderCover(url: string | null) {
-  if (!url || url === "no-cover") return true;
-  if (url.includes("gutenberg.org") && url.includes("/pg")) return true;
-  return false;
-}
+import BookCover from "@/components/BookCover";
 
 type FontSize = "sm" | "md" | "lg" | "xl";
 
@@ -184,13 +178,9 @@ const BookPage = () => {
           </nav>
 
           <header className="mb-12 text-center">
-            {!isPlaceholderCover(book.cover_url) ? (
-              <img src={book.cover_url!} alt={`Copertina di ${book.title} di ${book.author}`} className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8" />
-            ) : (
-              <div className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8 aspect-[2/3] overflow-hidden">
-                <BookCoverPlaceholder title={book.title} author={book.author} />
-              </div>
-            )}
+            <div className="mx-auto w-40 sm:w-48 rounded-lg shadow-xl mb-8 aspect-[2/3] overflow-hidden">
+              <BookCover title={book.title} author={book.author} coverUrl={book.cover_url} />
+            </div>
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ textWrap: "balance" } as React.CSSProperties}>
               {book.title}
             </h1>
