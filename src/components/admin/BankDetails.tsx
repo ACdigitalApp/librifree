@@ -11,9 +11,10 @@ interface BankData {
   bic_swift: string;
   account_holder: string;
   bank_name: string;
+  notes: string;
 }
 
-const BANK_KEYS: (keyof BankData)[] = ["iban", "bic_swift", "account_holder", "bank_name"];
+const BANK_KEYS: (keyof BankData)[] = ["iban", "bic_swift", "account_holder", "bank_name", "notes"];
 
 const BankDetails = () => {
   const { toast } = useToast();
@@ -25,6 +26,7 @@ const BankDetails = () => {
     bic_swift: "",
     account_holder: "",
     bank_name: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -43,7 +45,7 @@ const BankDetails = () => {
         .in("setting_key", BANK_KEYS);
 
       if (settings) {
-        const bankData: BankData = { iban: "", bic_swift: "", account_holder: "", bank_name: "" };
+        const bankData: BankData = { iban: "", bic_swift: "", account_holder: "", bank_name: "", notes: "" };
         settings.forEach((s) => {
           if (BANK_KEYS.includes(s.setting_key as keyof BankData)) {
             bankData[s.setting_key as keyof BankData] = s.setting_value || "";
@@ -126,6 +128,12 @@ const BankDetails = () => {
             <p className="text-xs text-muted-foreground mb-1">BIC/SWIFT</p>
             <p className="text-sm font-mono">{data.bic_swift || "—"}</p>
           </div>
+          {data.notes && (
+            <div className="md:col-span-2">
+              <p className="text-xs text-muted-foreground mb-1">Note / Riferimenti</p>
+              <p className="text-sm">{data.notes}</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -178,6 +186,16 @@ const BankDetails = () => {
                 onChange={(e) => setData({ ...data, bic_swift: e.target.value.toUpperCase().replace(/\s/g, "") })}
                 className="h-9 text-sm font-mono"
                 maxLength={11}
+              />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label htmlFor="notes" className="text-xs">Note / Riferimenti (es. codice partner Amazon)</Label>
+              <textarea
+                id="notes"
+                placeholder="Codice partner Amazon Associates, note sui pagamenti, ecc."
+                value={data.notes}
+                onChange={(e) => setData({ ...data, notes: e.target.value })}
+                className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
               />
             </div>
           </div>
