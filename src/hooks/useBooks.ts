@@ -16,16 +16,18 @@ export function useBooks({
   categorySlug = "",
   language = "",
   sortBy = "author" as "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at",
+  pageSize,
 }: {
   search?: string;
   categorySlug?: string;
   language?: string;
   sortBy?: "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at";
+  pageSize?: number;
 } = {}) {
   return useInfiniteQuery({
-    queryKey: ["books", search, categorySlug, language, sortBy],
+    queryKey: ["books", search, categorySlug, language, sortBy, pageSize],
     queryFn: ({ pageParam = 0 }) =>
-      fetchBooks({ page: pageParam, search, categorySlug, language, sortBy }),
+      fetchBooks({ page: pageParam, search, categorySlug, language, sortBy, pageSize }),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.hasMore ? allPages.length : undefined,
     initialPageParam: 0,
