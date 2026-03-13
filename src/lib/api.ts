@@ -103,7 +103,7 @@ export async function fetchRecentBooks(limit = 12) {
 export async function fetchPopularBooks(limit = 12) {
   const { data, error } = await supabase
     .from("books")
-    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)")
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, book_code, categories(*)")
     .order("views", { ascending: false })
     .limit(limit);
   if (error) throw error;
