@@ -225,6 +225,7 @@ const Library = () => {
             </div>
           )}
         </div>
+        <Footer />
       </div>
     </>
   );
