@@ -214,19 +214,61 @@ const AdminPanel = () => {
 
       <div className="px-6 py-8 max-w-[1280px] mx-auto">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="rounded-xl border border-border p-5">
-            <p className="text-xs text-muted-foreground mb-1">Total Books</p>
+            <p className="text-xs text-muted-foreground mb-1">Libri totali</p>
             <p className="text-2xl font-semibold">{loadingStats ? "..." : stats?.totalBooks}</p>
           </div>
           <div className="rounded-xl border border-border p-5">
-            <p className="text-xs text-muted-foreground mb-1">Total Views</p>
+            <p className="text-xs text-muted-foreground mb-1">Visualizzazioni totali</p>
             <p className="text-2xl font-semibold">{loadingStats ? "..." : stats?.totalViews?.toLocaleString()}</p>
           </div>
-          <div className="rounded-xl border border-border p-5 col-span-2 md:col-span-1">
+          <div className="rounded-xl border border-border p-5">
+            <p className="text-xs text-muted-foreground mb-1">💰 Guadagno stimato</p>
+            <p className="text-2xl font-semibold text-green-600">
+              {loadingStats ? "..." : `€${((stats?.totalViews ?? 0) / 1000 * 5).toFixed(2)}`}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">RPM medio €5,00</p>
+          </div>
+          <div className="rounded-xl border border-border p-5">
             <p className="text-xs text-muted-foreground mb-1">Top Book</p>
             <p className="text-sm font-medium truncate">{loadingStats ? "..." : stats?.topBooks?.[0]?.title}</p>
             <p className="text-xs text-muted-foreground">{stats?.topBooks?.[0]?.views} views</p>
+          </div>
+        </div>
+
+        {/* Dettaglio guadagni */}
+        <div className="rounded-xl border border-border p-5 mb-8">
+          <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            💰 Stima Guadagni AdSense
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="rounded-lg bg-secondary/50 p-4">
+              <p className="text-xs text-muted-foreground mb-1">Oggi (stima)</p>
+              <p className="text-lg font-semibold">
+                {loadingStats ? "..." : `€${((stats?.totalViews ?? 0) / 1000 * 5 / 30).toFixed(2)}`}
+              </p>
+              <p className="text-xs text-muted-foreground">{loadingStats ? "..." : Math.round((stats?.totalViews ?? 0) / 30).toLocaleString()} views/giorno</p>
+            </div>
+            <div className="rounded-lg bg-secondary/50 p-4">
+              <p className="text-xs text-muted-foreground mb-1">Questo mese (stima)</p>
+              <p className="text-lg font-semibold">
+                {loadingStats ? "..." : `€${((stats?.totalViews ?? 0) / 1000 * 5).toFixed(2)}`}
+              </p>
+              <p className="text-xs text-muted-foreground">{loadingStats ? "..." : (stats?.totalViews ?? 0).toLocaleString()} views totali</p>
+            </div>
+            <div className="rounded-lg bg-secondary/50 p-4">
+              <p className="text-xs text-muted-foreground mb-1">Proiezione annuale</p>
+              <p className="text-lg font-semibold text-green-600">
+                {loadingStats ? "..." : `€${((stats?.totalViews ?? 0) / 1000 * 5 * 12).toFixed(2)}`}
+              </p>
+              <p className="text-xs text-muted-foreground">basata sul traffico attuale</p>
+            </div>
+          </div>
+          <div className="border-t border-border pt-3">
+            <p className="text-xs text-muted-foreground">
+              ⚠️ Stime basate su RPM medio di €5,00/1000 views. Il guadagno reale dipende da CTR, CPC, nicchia e geo degli utenti. Consulta la dashboard AdSense per i dati effettivi.
+            </p>
           </div>
         </div>
 
