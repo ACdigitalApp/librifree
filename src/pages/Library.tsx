@@ -80,10 +80,15 @@ const Library = () => {
       <div className="min-h-svh flex flex-col">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
           <div className="flex items-center justify-between px-6 sm:px-8 py-3 max-w-[1280px] mx-auto">
-            <Link to="/" className="text-sm font-semibold tracking-tight hover:opacity-70 transition-opacity">
+              <Link to="/" className="text-sm font-semibold tracking-tight hover:opacity-70 transition-opacity">
               Librifree
             </Link>
-            <LanguageSelector />
+            <div className="flex items-center gap-4">
+              <Link to="/chi-siamo" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Chi siamo
+              </Link>
+              <LanguageSelector />
+            </div>
           </div>
         </nav>
 
