@@ -93,7 +93,7 @@ export async function fetchCategories() {
 export async function fetchRecentBooks(limit = 12) {
   const { data, error } = await supabase
     .from("books")
-    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, categories(*)")
+    .select("id, title, author, slug, cover_url, language, views, category_id, created_at, book_code, categories(*)")
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
