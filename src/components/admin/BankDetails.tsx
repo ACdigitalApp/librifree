@@ -128,6 +128,12 @@ const BankDetails = () => {
             <p className="text-xs text-muted-foreground mb-1">BIC/SWIFT</p>
             <p className="text-sm font-mono">{data.bic_swift || "—"}</p>
           </div>
+          {data.notes && (
+            <div className="md:col-span-2">
+              <p className="text-xs text-muted-foreground mb-1">Note / Riferimenti</p>
+              <p className="text-sm">{data.notes}</p>
+            </div>
+          )}
         </div>
       )}
 
