@@ -122,7 +122,7 @@ const BookPage = () => {
         breadcrumbs={breadcrumbs}
       />
 
-      <div className={`min-h-svh transition-colors ${darkMode ? "reader-dark bg-[hsl(0,0%,8%)] text-[hsl(0,0%,85%)]" : "bg-background text-foreground"}`}>
+      <div className={`min-h-svh flex flex-col transition-colors ${darkMode ? "reader-dark bg-[hsl(0,0%,8%)] text-[hsl(0,0%,85%)]" : "bg-background text-foreground"}`}>
         <nav className={`sticky top-0 z-10 backdrop-blur-md border-b ${darkMode ? "bg-[hsl(0,0%,8%)]/80 border-[hsl(0,0%,20%)]" : "bg-background/80 border-border"}`}>
           <div className="flex items-center justify-between px-6 py-3 max-w-[65ch] mx-auto">
             <Link to="/biblioteca" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
