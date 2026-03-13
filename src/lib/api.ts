@@ -24,6 +24,7 @@ export async function fetchBooks({
   language?: string;
   sortBy?: "title" | "title_desc" | "author" | "author_desc" | "views" | "created_at";
   pageSize?: number;
+  bookCode?: number;
 } = {}) {
   let query = supabase
     .from("books")
