@@ -26,6 +26,7 @@ const BankDetails = () => {
     bic_swift: "",
     account_holder: "",
     bank_name: "",
+    notes: "",
   });
 
   useEffect(() => {
