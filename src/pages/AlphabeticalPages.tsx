@@ -2,18 +2,10 @@ import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-
-function slugifyAuthor(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+import SEOHead from "@/components/SEOHead";
+import { slugifyAuthor } from "@/lib/seo";
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("");
 
@@ -51,15 +43,22 @@ export const BooksAlphabeticalPage = () => {
     },
   });
 
+  const pagePath = `/libri-${l}`;
   const seoTitle = `Libri che iniziano per ${l.toUpperCase()} | Librifree`;
+  const seoDesc = `Elenco alfabetico dei libri che iniziano con la lettera ${l.toUpperCase()} disponibili gratuitamente su Librifree.`;
 
   return (
     <>
-      <Helmet>
-        <title>{seoTitle}</title>
-        <meta name="description" content={`Elenco alfabetico dei libri che iniziano con la lettera ${l.toUpperCase()} disponibili gratuitamente su Librifree.`} />
-        <link rel="canonical" href={`https://librifree.lovable.app/libri-${l}`} />
-      </Helmet>
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        path={pagePath}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Biblioteca", url: "/biblioteca" },
+          { name: `Libri ${l.toUpperCase()}`, url: pagePath },
+        ]}
+      />
 
       <div className="min-h-svh bg-background text-foreground">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
@@ -95,7 +94,7 @@ export const BooksAlphabeticalPage = () => {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {book.cover_url && (
-                      <img src={book.cover_url} alt="" className="w-8 h-12 object-cover rounded flex-shrink-0" loading="lazy" />
+                      <img src={book.cover_url} alt={`Copertina di ${book.title}`} className="w-8 h-12 object-cover rounded flex-shrink-0" loading="lazy" />
                     )}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{book.title}</p>
@@ -127,15 +126,22 @@ export const AuthorsAlphabeticalPage = () => {
     },
   });
 
+  const pagePath = `/autori-${l}`;
   const seoTitle = `Autori che iniziano per ${l.toUpperCase()} | Librifree`;
+  const seoDesc = `Elenco alfabetico degli autori che iniziano con la lettera ${l.toUpperCase()} disponibili gratuitamente su Librifree.`;
 
   return (
     <>
-      <Helmet>
-        <title>{seoTitle}</title>
-        <meta name="description" content={`Elenco alfabetico degli autori che iniziano con la lettera ${l.toUpperCase()} disponibili gratuitamente su Librifree.`} />
-        <link rel="canonical" href={`https://librifree.lovable.app/autori-${l}`} />
-      </Helmet>
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        path={pagePath}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Biblioteca", url: "/biblioteca" },
+          { name: `Autori ${l.toUpperCase()}`, url: pagePath },
+        ]}
+      />
 
       <div className="min-h-svh bg-background text-foreground">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">

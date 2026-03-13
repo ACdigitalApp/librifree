@@ -3,11 +3,12 @@ import { useBook } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2, BookOpen, Sparkles } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
+import SEOHead from "@/components/SEOHead";
+import { SITE_URL } from "@/lib/seo";
 
 const SummaryPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -49,27 +50,39 @@ const SummaryPage = () => {
     );
   }
 
-  const seoTitle = (book as any).seo_title || `${t("summaryOf")} ${book.title} – Librifree`;
-  const seoDesc = (book as any).seo_description || `${t("summaryOf")} "${book.title}" ${t("by")} ${book.author}.`;
+  const summaryPath = `/riassunto/${book.slug}`;
+  const seoTitle = (book as any).seo_title || `Riassunto di ${book.title} di ${book.author} | Librifree`;
+  const seoDesc = (book as any).seo_description || `Riassunto completo di "${book.title}" di ${book.author}. Leggi la sintesi dell'opera su Librifree.`;
   const summary = (book as any).summary as string | null;
 
-  const structuredData = {
+  const articleSD = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: `${t("summaryOf")} ${book.title}`,
+    headline: `Riassunto di ${book.title}`,
     author: { "@type": "Person", name: book.author },
     about: { "@type": "Book", name: book.title },
-    url: `https://librifree.lovable.app/riassunto/${book.slug}`,
-    image: book.cover_url || "",
+    url: `${SITE_URL}${summaryPath}`,
+    image: book.cover_url || undefined,
   };
+
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Biblioteca", url: "/biblioteca" },
+    { name: book.title, url: `/libri/${book.slug}` },
+    { name: "Riassunto", url: summaryPath },
+  ];
 
   return (
     <>
-      <Helmet>
-        <title>{seoTitle}</title>
-        <meta name="description" content={seoDesc} />
-        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-      </Helmet>
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        path={summaryPath}
+        type="article"
+        image={book.cover_url || undefined}
+        structuredData={articleSD}
+        breadcrumbs={breadcrumbs}
+      />
 
       <div className="min-h-svh bg-background text-foreground">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
@@ -83,11 +96,22 @@ const SummaryPage = () => {
         </nav>
 
         <article className="px-6 sm:px-8 py-10 sm:py-16 max-w-[720px] mx-auto">
+          {/* Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
+            <ol className="flex flex-wrap items-center gap-1">
+              <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+              <li>/</li>
+              <li><Link to={`/libri/${book.slug}`} className="hover:text-foreground transition-colors">{book.title}</Link></li>
+              <li>/</li>
+              <li className="text-foreground font-medium">Riassunto</li>
+            </ol>
+          </nav>
+
           <header className="mb-12 text-center">
             {book.cover_url && (
               <img
                 src={book.cover_url}
-                alt={`${t("coverAlt")} ${book.title}`}
+                alt={`Copertina di ${book.title} di ${book.author}`}
                 className="mx-auto w-32 sm:w-40 rounded-lg shadow-xl mb-8"
               />
             )}
@@ -96,7 +120,7 @@ const SummaryPage = () => {
               {t("aiSummary")}
             </div>
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight" style={{ textWrap: "balance" as any }}>
-              {t("summaryOf")} {book.title}
+              Riassunto di {book.title}
             </h1>
             <p className="mt-2 text-base text-muted-foreground">{book.author}</p>
           </header>
@@ -117,14 +141,12 @@ const SummaryPage = () => {
             </div>
           )}
 
-          {/* Monetization */}
           <div className="mt-12 space-y-6">
             <AdBanner slot="summary-mid" />
             <AffiliateBookLink title={book.title} author={book.author} />
             <SummaryRecommendations categoryId={book.category_id} slug={book.slug} />
           </div>
 
-          {/* Link to read the full book */}
           <div className="mt-10 text-center border-t border-border pt-8">
             <Link
               to={`/libri/${book.slug}`}

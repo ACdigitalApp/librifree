@@ -2,9 +2,9 @@ import { useParams, Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { useBooks } from "@/hooks/useBooks";
 import { AdBanner } from "@/components/Monetization";
+import SEOHead from "@/components/SEOHead";
 
 const CategoryPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -18,16 +18,33 @@ const CategoryPage = () => {
   const allBooks = data?.pages.flatMap((p) => p.books) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
 
-  const seoTitle = `${categoryName} – Libri Gratuiti | Librifree`;
-  const seoDesc = `Esplora ${totalCount} libri di ${categoryName} disponibili gratuitamente su Librifree. Leggi le opere complete con riassunti e analisi.`;
+  const catPath = `/categoria/${slug}`;
+  const seoTitle = `${categoryName} – Libri Gratuiti Online | Librifree`;
+  const seoDesc = `Esplora ${totalCount} libri di ${categoryName} disponibili gratuitamente su Librifree. Leggi le opere complete con riassunti e analisi letterarie.`;
+
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Biblioteca", url: "/biblioteca" },
+    { name: categoryName, url: catPath },
+  ];
+
+  const collectionSD = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: categoryName,
+    description: seoDesc,
+    url: `https://librifree.it${catPath}`,
+  };
 
   return (
     <>
-      <Helmet>
-        <title>{seoTitle}</title>
-        <meta name="description" content={seoDesc} />
-        <link rel="canonical" href={`https://librifree.lovable.app/categoria/${slug}`} />
-      </Helmet>
+      <SEOHead
+        title={seoTitle}
+        description={seoDesc}
+        path={catPath}
+        structuredData={collectionSD}
+        breadcrumbs={breadcrumbs}
+      />
 
       <div className="min-h-svh bg-background text-foreground">
         <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
@@ -41,6 +58,17 @@ const CategoryPage = () => {
         </nav>
 
         <div className="px-6 sm:px-8 py-10 sm:py-16 max-w-[1280px] mx-auto">
+          {/* Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
+            <ol className="flex items-center gap-1">
+              <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+              <li>/</li>
+              <li><Link to="/biblioteca" className="hover:text-foreground transition-colors">Biblioteca</Link></li>
+              <li>/</li>
+              <li className="text-foreground font-medium">{categoryName}</li>
+            </ol>
+          </nav>
+
           <header className="mb-10">
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{categoryName}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -66,7 +94,7 @@ const CategoryPage = () => {
                       {book.cover_url ? (
                         <img
                           src={book.cover_url}
-                          alt={`${t("coverAlt")} ${book.title}`}
+                          alt={`Copertina di ${book.title} di ${book.author}`}
                           className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                           loading="lazy"
                         />
