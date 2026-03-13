@@ -189,6 +189,17 @@ const BankDetails = () => {
               />
             </div>
           </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label htmlFor="notes" className="text-xs">Note / Riferimenti (es. codice partner Amazon)</Label>
+              <textarea
+                id="notes"
+                placeholder="Codice partner Amazon Associates, note sui pagamenti, ecc."
+                value={data.notes}
+                onChange={(e) => setData({ ...data, notes: e.target.value })}
+                className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+              />
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={handleSave} disabled={saving || !data.iban.trim()}>
               {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
