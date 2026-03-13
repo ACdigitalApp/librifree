@@ -50,6 +50,10 @@ export async function fetchBooks({
     query = query.eq("language", language);
   }
 
+  if (bookCode) {
+    query = query.eq("book_code", bookCode);
+  }
+
   const column = sortBy.replace("_desc", "") as string;
   const ascending = sortBy === "title" || sortBy === "author";
   query = query
