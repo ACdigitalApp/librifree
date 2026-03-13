@@ -52,7 +52,7 @@ const Library = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useBooks({ search: debouncedSearch, categorySlug, sortBy, pageSize });
+  } = useBooks({ search: debouncedSearch, categorySlug, sortBy, pageSize, bookCode: debouncedBookCode });
 
   const allBooks = data?.pages.flatMap((p) => p.books) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
