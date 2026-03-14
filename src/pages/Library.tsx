@@ -19,12 +19,13 @@ import BookCover from "@/components/BookCover";
 
 const Library = () => {
   const { t } = useLanguage();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get("categoria") || "";
+  const initialBookCode = searchParams.get("codice") || "";
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [bookCodeSearch, setBookCodeSearch] = useState("");
-  const [debouncedBookCode, setDebouncedBookCode] = useState<number | undefined>();
+  const [bookCodeSearch, setBookCodeSearch] = useState(initialBookCode);
+  const [debouncedBookCode, setDebouncedBookCode] = useState<number | undefined>(initialBookCode ? parseInt(initialBookCode, 10) : undefined);
   const [categorySlug, setCategorySlug] = useState(initialCategory);
   const [sortBy, setSortBy] = useState<"author" | "author_desc" | "title" | "title_desc" | "views" | "created_at">("author");
   const [pageSize, setPageSize] = useState(25);
@@ -41,9 +42,18 @@ const Library = () => {
     setBookCodeSearch(cleaned);
     if (codeTimerRef.current) clearTimeout(codeTimerRef.current);
     codeTimerRef.current = setTimeout(() => {
-      setDebouncedBookCode(cleaned ? parseInt(cleaned, 10) : undefined);
+      const code = cleaned ? parseInt(cleaned, 10) : undefined;
+      setDebouncedBookCode(code);
+      // Update URL parameter
+      const newParams = new URLSearchParams(searchParams);
+      if (code) {
+        newParams.set("codice", String(code));
+      } else {
+        newParams.delete("codice");
+      }
+      setSearchParams(newParams, { replace: true });
     }, 300);
-  }, []);
+  }, [searchParams, setSearchParams]);
 
   const { data: categories } = useCategories();
   const {
