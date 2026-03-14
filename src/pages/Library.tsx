@@ -42,9 +42,18 @@ const Library = () => {
     setBookCodeSearch(cleaned);
     if (codeTimerRef.current) clearTimeout(codeTimerRef.current);
     codeTimerRef.current = setTimeout(() => {
-      setDebouncedBookCode(cleaned ? parseInt(cleaned, 10) : undefined);
+      const code = cleaned ? parseInt(cleaned, 10) : undefined;
+      setDebouncedBookCode(code);
+      // Update URL parameter
+      const newParams = new URLSearchParams(searchParams);
+      if (code) {
+        newParams.set("codice", String(code));
+      } else {
+        newParams.delete("codice");
+      }
+      setSearchParams(newParams, { replace: true });
     }, 300);
-  }, []);
+  }, [searchParams, setSearchParams]);
 
   const { data: categories } = useCategories();
   const {
