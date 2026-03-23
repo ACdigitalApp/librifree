@@ -307,6 +307,9 @@ const AdminPanel = () => {
         {/* Bank Details */}
         <BankDetails />
 
+        {/* User Management */}
+        <UserManagement />
+
         {/* Mass Import Tool */}
         <MassImportTool />
 
