@@ -10,11 +10,11 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-// Eager: homepage
+// Eager: homepage + library (most visited, public)
 import Index from "./pages/Index.tsx";
+import Library from "./pages/Library.tsx";
 
 // Lazy: all other pages
-const Library = lazy(() => import("./pages/Library.tsx"));
 const BookPage = lazy(() => import("./pages/BookPage.tsx"));
 const SummaryPage = lazy(() => import("./pages/SummaryPage.tsx"));
 const AuthorPage = lazy(() => import("./pages/AuthorPage.tsx"));
@@ -78,16 +78,26 @@ const App = () => (
                 <Routes>
                   {/* Public pages */}
                   <Route path="/" element={<Index />} />
+                  <Route path="/biblioteca" element={<Library />} />
                   <Route path="/chi-siamo" element={<ChiSiamo />} />
                   <Route path="/accedi" element={<LoginPage />} />
                   <Route path="/registrazione" element={<RegisterPage />} />
                   <Route path="/password-dimenticata" element={<ForgotPasswordPage />} />
                   <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-                  {/* Protected: Library and content pages */}
-                  <Route path="/biblioteca" element={<ProtectedRoute><Library /></ProtectedRoute>} />
-                  <Route path="/libri/:slug" element={<ProtectedRoute><BookPage /></ProtectedRoute>} />
-                  <Route path="/libro/:slug" element={<ProtectedRoute><BookPage /></ProtectedRoute>} />
+                  {/* Book pages - public access, content gated inside component */}
+                  <Route path="/libri/:slug" element={<BookPage />} />
+                  <Route path="/libro/:slug" element={<BookPage />} />
+
+                  {/* Public browsing pages */}
+                  <Route path="/autore/:name" element={<AuthorPage />} />
+                  <Route path="/author/:name" element={<AuthorPage />} />
+                  <Route path="/categoria/:slug" element={<CategoryPage />} />
+                  <Route path="/tag/:slug" element={<TagPage />} />
+                  <Route path="/libri-:letter" element={<BooksAlphabeticalPage />} />
+                  <Route path="/autori-:letter" element={<AuthorsAlphabeticalPage />} />
+
+                  {/* Protected: full content pages (require auth) */}
                   <Route path="/riassunto/:slug" element={<ProtectedRoute><SummaryPage /></ProtectedRoute>} />
                   <Route path="/personaggi/:slug" element={<ProtectedRoute><CharactersPage /></ProtectedRoute>} />
                   <Route path="/citazioni/:slug" element={<ProtectedRoute><QuotesPage /></ProtectedRoute>} />
@@ -95,15 +105,9 @@ const App = () => (
                   <Route path="/capitoli/:slug" element={<ProtectedRoute><ChaptersPage /></ProtectedRoute>} />
                   <Route path="/temi/:slug" element={<ProtectedRoute><ThemesPage /></ProtectedRoute>} />
                   <Route path="/contesto-storico/:slug" element={<ProtectedRoute><HistoricalContextPage /></ProtectedRoute>} />
-                  <Route path="/autore/:name" element={<ProtectedRoute><AuthorPage /></ProtectedRoute>} />
-                  <Route path="/author/:name" element={<ProtectedRoute><AuthorPage /></ProtectedRoute>} />
-                  <Route path="/categoria/:slug" element={<ProtectedRoute><CategoryPage /></ProtectedRoute>} />
-                  <Route path="/tag/:slug" element={<ProtectedRoute><TagPage /></ProtectedRoute>} />
                   <Route path="/riassunto-scuola/:slug" element={<ProtectedRoute><SchoolSummaryPage /></ProtectedRoute>} />
                   <Route path="/analisi-scolastica/:slug" element={<ProtectedRoute><SchoolAnalysisPage /></ProtectedRoute>} />
                   <Route path="/personaggi-spiegati/:slug" element={<ProtectedRoute><CharactersExplainedPage /></ProtectedRoute>} />
-                  <Route path="/libri-:letter" element={<ProtectedRoute><BooksAlphabeticalPage /></ProtectedRoute>} />
-                  <Route path="/autori-:letter" element={<ProtectedRoute><AuthorsAlphabeticalPage /></ProtectedRoute>} />
 
                   {/* Admin */}
                   <Route path="/admin/login" element={<AdminLogin />} />
