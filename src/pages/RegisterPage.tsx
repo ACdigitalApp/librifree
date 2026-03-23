@@ -20,7 +20,7 @@ const RegisterPage = () => {
 
     if (!email.trim()) { setError("L'email è obbligatoria."); return; }
     if (!password) { setError("La password è obbligatoria."); return; }
-    if (password.length < 8) { setError("La password deve contenere almeno 8 caratteri."); return; }
+    if (password.length < 6) { setError("La password deve contenere almeno 8 caratteri."); return; }
     if (password !== confirmPassword) { setError("Le password non corrispondono."); return; }
 
     setLoading(true);

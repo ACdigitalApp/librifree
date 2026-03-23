@@ -6,6 +6,7 @@ import { deleteBook, updateBook } from "@/lib/api";
 import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal, ImagePlus } from "lucide-react";
 import MassImportTool from "@/components/admin/MassImportTool";
 import BankDetails from "@/components/admin/BankDetails";
+import UserManagement from "@/components/admin/UserManagement";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -305,6 +306,9 @@ const AdminPanel = () => {
 
         {/* Bank Details */}
         <BankDetails />
+
+        {/* User Management */}
+        <UserManagement />
 
         {/* Mass Import Tool */}
         <MassImportTool />
