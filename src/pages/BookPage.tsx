@@ -3,14 +3,16 @@ import { useParams, Link } from "react-router-dom";
 import { useBook } from "@/hooks/useBooks";
 import { incrementBookViews } from "@/lib/api";
 import { useLanguage } from "@/i18n/LanguageContext";
-import LanguageSelector from "@/components/LanguageSelector";
-import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers, Clock, GraduationCap, Hash } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import AuthHeader from "@/components/AuthHeader";
+import { ArrowLeft, Loader2, Moon, Sun, Minus, Plus, List, Users, Quote, BookMarked, Layers, Clock, GraduationCap, Hash, Lock } from "lucide-react";
 import { AffiliateBookLink, AdBanner, RecommendedBooks } from "@/components/Monetization";
 import { useRecommendedBooks } from "@/hooks/useRecommendedBooks";
 import SEOHead from "@/components/SEOHead";
 import { SITE_URL, slugifyAuthor } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import BookCover from "@/components/BookCover";
+import { Button } from "@/components/ui/button";
 
 type FontSize = "sm" | "md" | "lg" | "xl";
 
@@ -18,6 +20,7 @@ const BookPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: book, isLoading, error } = useBook(slug);
   const { t } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState<FontSize>("md");
   const [showToc, setShowToc] = useState(false);
@@ -27,7 +30,7 @@ const BookPage = () => {
   }, [slug]);
 
   const toc = useMemo(() => {
-    if (!book?.content) return [];
+    if (!book?.content || !user) return [];
     const parser = new DOMParser();
     const doc = parser.parseFromString(book.content, "text/html");
     const headings = doc.querySelectorAll("h2, h3");
@@ -36,20 +39,20 @@ const BookPage = () => {
       text: h.textContent || "",
       level: h.tagName === "H2" ? 2 : 3,
     }));
-  }, [book?.content]);
+  }, [book?.content, user]);
 
   const processedContent = useMemo(() => {
-    if (!book?.content) return "";
+    if (!book?.content || !user) return "";
     let index = 0;
     return book.content.replace(/<(h[23])>/g, (_match, tag) => {
       return `<${tag} id="heading-${index++}">`;
     });
-  }, [book?.content]);
+  }, [book?.content, user]);
 
   const fontSizes: FontSize[] = ["sm", "md", "lg", "xl"];
   const currentFontIndex = fontSizes.indexOf(fontSize);
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="min-h-svh flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -67,6 +70,8 @@ const BookPage = () => {
       </div>
     );
   }
+
+  const isAuthenticated = !!user;
 
   const seoTitle = `${book.title} di ${book.author} | Librifree`;
   const seoDesc = book.description || `Leggi "${book.title}" di ${book.author} gratuitamente su Librifree. Testo integrale, riassunto, analisi e approfondimenti.`;
@@ -117,32 +122,36 @@ const BookPage = () => {
       />
 
       <div className={`min-h-svh flex flex-col transition-colors ${darkMode ? "reader-dark bg-[hsl(0,0%,8%)] text-[hsl(0,0%,85%)]" : "bg-background text-foreground"}`}>
-        <nav className={`sticky top-0 z-10 backdrop-blur-md border-b ${darkMode ? "bg-[hsl(0,0%,8%)]/80 border-[hsl(0,0%,20%)]" : "bg-background/80 border-border"}`}>
-          <div className="flex items-center justify-between px-6 py-3 max-w-[65ch] mx-auto">
-            <Link to="/biblioteca" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("backToLibrary")}</span>
-            </Link>
-            <div className="flex items-center gap-1">
-              {toc.length > 0 && (
-                <button onClick={() => setShowToc(!showToc)} className={`p-2 rounded-full transition-colors ${showToc ? "bg-foreground/10" : "hover:bg-foreground/5"}`}>
-                  <List className="w-4 h-4" />
+        {/* Nav bar */}
+        {isAuthenticated ? (
+          <nav className={`sticky top-0 z-10 backdrop-blur-md border-b ${darkMode ? "bg-[hsl(0,0%,8%)]/80 border-[hsl(0,0%,20%)]" : "bg-background/80 border-border"}`}>
+            <div className="flex items-center justify-between px-6 py-3 max-w-[65ch] mx-auto">
+              <Link to="/biblioteca" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">{t("backToLibrary")}</span>
+              </Link>
+              <div className="flex items-center gap-1">
+                {toc.length > 0 && (
+                  <button onClick={() => setShowToc(!showToc)} className={`p-2 rounded-full transition-colors ${showToc ? "bg-foreground/10" : "hover:bg-foreground/5"}`}>
+                    <List className="w-4 h-4" />
+                  </button>
+                )}
+                <button onClick={() => currentFontIndex > 0 && setFontSize(fontSizes[currentFontIndex - 1])} disabled={currentFontIndex === 0} className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors">
+                  <Minus className="w-3.5 h-3.5" />
                 </button>
-              )}
-              <button onClick={() => currentFontIndex > 0 && setFontSize(fontSizes[currentFontIndex - 1])} disabled={currentFontIndex === 0} className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors">
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="text-xs w-5 text-center font-medium uppercase">{fontSize}</span>
-              <button onClick={() => currentFontIndex < fontSizes.length - 1 && setFontSize(fontSizes[currentFontIndex + 1])} disabled={currentFontIndex === fontSizes.length - 1} className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors">
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-              <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-full hover:bg-foreground/5 transition-colors">
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-              <LanguageSelector />
+                <span className="text-xs w-5 text-center font-medium uppercase">{fontSize}</span>
+                <button onClick={() => currentFontIndex < fontSizes.length - 1 && setFontSize(fontSizes[currentFontIndex + 1])} disabled={currentFontIndex === fontSizes.length - 1} className="p-2 rounded-full hover:bg-foreground/5 disabled:opacity-30 transition-colors">
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-full hover:bg-foreground/5 transition-colors">
+                  {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        ) : (
+          <AuthHeader />
+        )}
 
         {showToc && toc.length > 0 && (
           <div className={`fixed right-0 top-[53px] bottom-0 w-72 z-20 overflow-y-auto border-l p-4 ${darkMode ? "bg-[hsl(0,0%,10%)] border-[hsl(0,0%,20%)]" : "bg-background border-border"}`}>
@@ -204,49 +213,78 @@ const BookPage = () => {
               </p>
             )}
 
-            <div className="mt-6">
-              <Link
-                to={`/riassunto/${book.slug}`}
-                className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-primary/90 shadow-md"
-              >
-                <BookMarked className="w-4 h-4" />
-                Leggi il Riassunto
-              </Link>
-            </div>
-
-            <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
-              {seoLinks.map(({ to, label, icon: Icon }) => (
+            {isAuthenticated && (
+              <div className="mt-6">
                 <Link
-                  key={to}
-                  to={to}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
+                  to={`/riassunto/${book.slug}`}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold transition-colors hover:bg-primary/90 shadow-md"
                 >
-                  <Icon className="w-3 h-3" />
-                  {label}
+                  <BookMarked className="w-4 h-4" />
+                  Leggi il Riassunto
                 </Link>
-              ))}
-              {book.file_url && (
-                <a
-                  href={book.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
-                >
-                  {t("download")}
-                </a>
-              )}
-            </div>
+              </div>
+            )}
+
+            {isAuthenticated && (
+              <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
+                {seoLinks.map(({ to, label, icon: Icon }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
+                  >
+                    <Icon className="w-3 h-3" />
+                    {label}
+                  </Link>
+                ))}
+                {book.file_url && (
+                  <a
+                    href={book.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-border"
+                  >
+                    {t("download")}
+                  </a>
+                )}
+              </div>
+            )}
           </header>
 
-          {processedContent && (
-            <div className="prose-book" dangerouslySetInnerHTML={{ __html: processedContent }} />
-          )}
+          {/* Content: gated for non-authenticated users */}
+          {isAuthenticated ? (
+            <>
+              {processedContent && (
+                <div className="prose-book" dangerouslySetInnerHTML={{ __html: processedContent }} />
+              )}
 
-          <div className="mt-12 space-y-6">
-            <AdBanner slot="book-mid" />
-            <AffiliateBookLink title={book.title} author={book.author} />
-            <BookRecommendations categoryId={book.category_id} slug={book.slug} />
-          </div>
+              <div className="mt-12 space-y-6">
+                <AdBanner slot="book-mid" />
+                <AffiliateBookLink title={book.title} author={book.author} />
+                <BookRecommendations categoryId={book.category_id} slug={book.slug} />
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12 px-6">
+              <div className="mx-auto w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-6">
+                <Lock className="w-7 h-7 text-muted-foreground" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground mb-2">
+                Accedi per leggere il libro completo
+              </h2>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
+                Registrati gratis per sbloccare il testo integrale, riassunti, analisi, personaggi e tutte le funzioni avanzate di Librifree.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <Link to="/registrazione">
+                  <Button size="lg">Registrati Gratis</Button>
+                </Link>
+                <Link to="/accedi">
+                  <Button variant="outline" size="lg">Accedi</Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </article>
         <Footer />
       </div>
