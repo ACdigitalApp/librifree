@@ -126,6 +126,16 @@ const RegisterPage = () => {
                 autoComplete="new-password"
               />
             </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Numero di telefono <span className="text-muted-foreground font-normal">(opzionale)</span></label>
+              <Input
+                type="tel"
+                placeholder="+39 333 1234567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                autoComplete="tel"
+              />
+            </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 

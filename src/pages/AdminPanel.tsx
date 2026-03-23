@@ -488,7 +488,7 @@ const AdminPanel = () => {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{book.author}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{book.categories?.name || "—"}</TableCell>
-                    <TableCell className="text-right text-sm">
+                    <TableCell className="text-right text-sm" title="Visualizzazioni" aria-label="Visualizzazioni">
                       <span className="inline-flex items-center gap-1">
                         <Eye className="h-3 w-3" /> {book.views ?? 0}
                       </span>
