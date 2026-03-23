@@ -20,6 +20,7 @@ const CategoryPage = lazy(() => import("./pages/CategoryPage.tsx"));
 const TagPage = lazy(() => import("./pages/TagPage.tsx"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin.tsx"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel.tsx"));
+const AdminUsers = lazy(() => import("./pages/AdminUsers.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const ChiSiamo = lazy(() => import("./pages/ChiSiamo.tsx"));
 
