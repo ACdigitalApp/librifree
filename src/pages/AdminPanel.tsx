@@ -495,16 +495,29 @@ const AdminPanel = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Link to={`/libri/${book.slug}`} target="_blank">
+                        <Link to={`/libri/${book.slug}`} target="_blank" title="Apri libro" aria-label="Apri libro">
                           <Button variant="ghost" size="icon" className="h-7 w-7">
                             <ExternalLink className="h-3 w-3" />
                           </Button>
                         </Link>
+                        {book.file_url ? (
+                          <a href={book.file_url} target="_blank" rel="noopener noreferrer" title="Apri PDF" aria-label="Apri PDF">
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <BookOpen className="h-3 w-3" />
+                            </Button>
+                          </a>
+                        ) : (
+                          <Button variant="ghost" size="icon" className="h-7 w-7 opacity-30 cursor-not-allowed" title="PDF non disponibile" aria-label="PDF non disponibile" disabled>
+                            <BookOpen className="h-3 w-3" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 text-destructive hover:text-destructive"
                           onClick={() => handleDelete(book.id, book.title)}
+                          title="Elimina libro"
+                          aria-label="Elimina libro"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
