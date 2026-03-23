@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useBooks, useCategories } from "@/hooks/useBooks";
 import { useLanguage } from "@/i18n/LanguageContext";
-import LanguageSelector from "@/components/LanguageSelector";
+import AuthHeader from "@/components/AuthHeader";
 import { Search, Loader2, BookMarked, Hash } from "lucide-react";
 import { AdBanner } from "@/components/Monetization";
 import { Input } from "@/components/ui/input";
