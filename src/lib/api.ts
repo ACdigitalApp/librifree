@@ -168,6 +168,7 @@ export async function fetchAdminBooks({
   const ascending = sortBy === "title" || sortBy === "author";
   query = query
     .order(column, { ascending })
+    .order("title", { ascending: true })
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
   const { data, error, count } = await query;

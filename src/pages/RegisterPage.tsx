@@ -45,7 +45,7 @@ const RegisterPage = () => {
     if (phone.trim() && signUpData.user) {
       await supabase
         .from("profiles")
-        .update({ phone: phone.trim() })
+        .update({ phone: phone.trim() } as any)
         .eq("id", signUpData.user.id);
     }
 
