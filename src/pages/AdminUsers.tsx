@@ -1,6 +1,10 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, RefreshCw, UserPlus, Search, ChevronUp, ChevronDown, Edit, KeyRound, Trash2, Phone } from "lucide-react";
+import {
+  ArrowLeft, RefreshCw, UserPlus, Search, ChevronUp, ChevronDown,
+  Edit, KeyRound, Trash2, Phone, DollarSign, TrendingUp, Users,
+  Calendar, Clock, XCircle
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,51 +46,54 @@ const DEMO_USERS: UserRecord[] = [
   { nome: "baldonic@gmail.com", email: "baldonic@gmail.com", ruolo: "User Pro", piano: "—", provider: "—", statoAbb: "—", scadenza: "—", totPagato: "—", saldo: "—", whatsapp: "+393357809000", notifiche: true, dataRegistrazione: "19 gen 2026", ultimoAccesso: "15 feb 2026 09:02" },
 ];
 
-const KPI_DATA = [
-  { label: "Incasso Totale", value: "€73.96", color: "text-emerald-600" },
-  { label: "Saldo Totale", value: "€73.96", color: "text-blue-600" },
-  { label: "Utenti Paganti", value: "2", color: "text-violet-600" },
-  { label: "Ultimi 30gg", value: "€0.00", color: "text-amber-600" },
-  { label: "Trial Attive", value: "1", color: "text-orange-600" },
-  { label: "Scaduti", value: "1", color: "text-red-600" },
+const KPI_DATA: { label: string; value: string; icon: React.ElementType; iconBg: string; iconColor: string }[] = [
+  { label: "Incasso Totale", value: "€73.96", icon: DollarSign, iconBg: "bg-emerald-50", iconColor: "text-emerald-600" },
+  { label: "Saldo Totale", value: "€73.96", icon: TrendingUp, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
+  { label: "Utenti Paganti", value: "2", icon: Users, iconBg: "bg-violet-50", iconColor: "text-violet-600" },
+  { label: "Ultimi 30gg", value: "€0.00", icon: Calendar, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
+  { label: "Trial Attive", value: "1", icon: Clock, iconBg: "bg-orange-50", iconColor: "text-orange-600" },
+  { label: "Scaduti", value: "1", icon: XCircle, iconBg: "bg-red-50", iconColor: "text-red-600" },
 ];
 
 function roleBadge(ruolo: string) {
-  switch (ruolo) {
-    case "Admin": return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">{ruolo}</Badge>;
-    case "User Pro": return <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">{ruolo}</Badge>;
-    default: return <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">{ruolo}</Badge>;
-  }
+  const cls: Record<string, string> = {
+    Admin: "bg-red-50 text-red-700 border-red-200",
+    "User Pro": "bg-amber-50 text-amber-700 border-amber-200",
+    User: "bg-blue-50 text-blue-700 border-blue-200",
+  };
+  return <Badge className={`${cls[ruolo] || cls.User} hover:opacity-90 text-xs`}>{ruolo}</Badge>;
 }
 
 function statoBadge(stato: string) {
-  switch (stato) {
-    case "Attivo": return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">{stato}</Badge>;
-    case "In Trial": return <Badge className="bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100">{stato}</Badge>;
-    case "Scaduto": return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">{stato}</Badge>;
-    case "Annullato": return <Badge className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100">{stato}</Badge>;
-    default: return <span className="text-muted-foreground text-sm">—</span>;
-  }
+  const map: Record<string, string> = {
+    Attivo: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    "In Trial": "bg-orange-50 text-orange-700 border-orange-200",
+    Scaduto: "bg-red-50 text-red-700 border-red-200",
+    Annullato: "bg-gray-100 text-gray-500 border-gray-200",
+  };
+  if (!map[stato]) return <span className="text-muted-foreground text-xs">—</span>;
+  return <Badge className={`${map[stato]} hover:opacity-90 text-xs`}>{stato}</Badge>;
 }
 
 function pianoBadge(piano: string) {
-  switch (piano) {
-    case "Trial": return <Badge className="bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-50">{piano}</Badge>;
-    case "Monthly": return <Badge className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-50">{piano}</Badge>;
-    case "Yearly": return <Badge className="bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-50">{piano}</Badge>;
-    case "Free": return <Badge className="bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-50">{piano}</Badge>;
-    default: return <span className="text-muted-foreground text-sm">—</span>;
-  }
+  const map: Record<string, string> = {
+    Trial: "bg-orange-50 text-orange-600 border-orange-200",
+    Monthly: "bg-blue-50 text-blue-600 border-blue-200",
+    Yearly: "bg-violet-50 text-violet-600 border-violet-200",
+    Free: "bg-gray-50 text-gray-500 border-gray-200",
+  };
+  if (!map[piano]) return <span className="text-muted-foreground text-xs">—</span>;
+  return <Badge className={`${map[piano]} hover:opacity-90 text-xs`}>{piano}</Badge>;
 }
 
 function providerBadge(provider: string) {
-  if (provider === "—") return <span className="text-muted-foreground text-sm">—</span>;
-  return <Badge variant="outline" className="text-xs">{provider}</Badge>;
+  if (provider === "—") return <span className="text-muted-foreground text-xs">—</span>;
+  return <Badge variant="outline" className="text-xs font-normal">{provider}</Badge>;
 }
 
 type SortKey = "nome" | "email" | "ruolo" | "piano" | "statoAbb" | "scadenza" | "totPagato" | "dataRegistrazione" | "ultimoAccesso";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 const AdminUsers = () => {
   const navigate = useNavigate();
@@ -123,7 +130,7 @@ const AdminUsers = () => {
   };
 
   const SortIcon = ({ col }: { col: SortKey }) => {
-    if (sortKey !== col) return <ChevronUp className="h-3 w-3 opacity-30" />;
+    if (sortKey !== col) return <ChevronUp className="h-3 w-3 opacity-20" />;
     return sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />;
   };
 
@@ -137,42 +144,59 @@ const AdminUsers = () => {
     toast({ title: "Utente eliminato", description: nome });
   };
 
+  const sortableHead = (key: SortKey, label: string) => (
+    <TableHead
+      className="cursor-pointer select-none whitespace-nowrap text-xs"
+      onClick={() => toggleSort(key)}
+    >
+      <span className="inline-flex items-center gap-1">{label} <SortIcon col={key} /></span>
+    </TableHead>
+  );
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
       <div className="border-b bg-background sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/admin")}>
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/admin")} className="shrink-0">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
-              <h1 className="text-xl font-bold">Gestione Utenti</h1>
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold truncate">Gestione Utenti</h1>
               <p className="text-sm text-muted-foreground">Amministra utenti, piani e incassi</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <Button variant="outline" size="sm" onClick={() => toast({ title: "Dati aggiornati" })}>
-              <RefreshCw className="h-4 w-4 mr-1" /> Aggiorna
+              <RefreshCw className="h-4 w-4 mr-1.5" /> Aggiorna
             </Button>
             <Button size="sm" onClick={() => toast({ title: "Funzione in arrivo", description: "Creazione nuovo utente" })}>
-              <UserPlus className="h-4 w-4 mr-1" /> Nuovo Utente
+              <UserPlus className="h-4 w-4 mr-1.5" /> Nuovo Utente
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {KPI_DATA.map(k => (
-            <Card key={k.label}>
-              <CardContent className="p-4 text-center">
-                <p className="text-xs text-muted-foreground mb-1">{k.label}</p>
-                <p className={`text-xl font-bold ${k.color}`}>{k.value}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {KPI_DATA.map(k => {
+            const Icon = k.icon;
+            return (
+              <Card key={k.label} className="border">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className={`h-10 w-10 rounded-full ${k.iconBg} flex items-center justify-center`}>
+                    <Icon className={`h-5 w-5 ${k.iconColor}`} />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold">{k.value}</p>
+                    <p className="text-xs text-muted-foreground">{k.label}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Filters */}
@@ -187,9 +211,7 @@ const AdminUsers = () => {
             />
           </div>
           <Select value={filterPiano} onValueChange={v => { setFilterPiano(v); setPage(0); }}>
-            <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="Tutti i piani" />
-            </SelectTrigger>
+            <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="Tutti i piani" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tutti i piani</SelectItem>
               <SelectItem value="Trial">Trial</SelectItem>
@@ -199,9 +221,7 @@ const AdminUsers = () => {
             </SelectContent>
           </Select>
           <Select value={filterStato} onValueChange={v => { setFilterStato(v); setPage(0); }}>
-            <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="Tutti gli stati" />
-            </SelectTrigger>
+            <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="Tutti gli stati" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tutti gli stati</SelectItem>
               <SelectItem value="In Trial">In Trial</SelectItem>
@@ -214,77 +234,96 @@ const AdminUsers = () => {
 
         {/* Table */}
         <Card>
-          <div className="p-4 border-b">
-            <h2 className="font-semibold">Utenti Registrati ({filtered.length})</h2>
+          <div className="px-5 py-4 border-b flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <h2 className="font-semibold text-sm">Utenti Registrati ({filtered.length})</h2>
           </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  {([
-                    ["nome", "Nome"], ["email", "Email"], ["ruolo", "Ruolo"], ["piano", "Piano"],
-                  ] as [SortKey, string][]).map(([k, l]) => (
-                    <TableHead key={k} className="cursor-pointer select-none whitespace-nowrap" onClick={() => toggleSort(k)}>
-                      <span className="flex items-center gap-1">{l} <SortIcon col={k} /></span>
-                    </TableHead>
-                  ))}
-                  <TableHead className="whitespace-nowrap">Provider</TableHead>
-                  <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => toggleSort("statoAbb")}>
-                    <span className="flex items-center gap-1">Stato Abb. <SortIcon col="statoAbb" /></span>
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap">Scadenza</TableHead>
-                  <TableHead className="whitespace-nowrap">Tot. Pagato</TableHead>
-                  <TableHead className="whitespace-nowrap">Saldo</TableHead>
-                  <TableHead className="whitespace-nowrap">WhatsApp</TableHead>
-                  <TableHead className="whitespace-nowrap">Notifiche</TableHead>
-                  <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => toggleSort("dataRegistrazione")}>
-                    <span className="flex items-center gap-1">Registrazione <SortIcon col="dataRegistrazione" /></span>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => toggleSort("ultimoAccesso")}>
-                    <span className="flex items-center gap-1">Ultimo Accesso <SortIcon col="ultimoAccesso" /></span>
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap">Azioni</TableHead>
+                  {sortableHead("nome", "Nome")}
+                  {sortableHead("email", "Email")}
+                  {sortableHead("ruolo", "Ruolo")}
+                  {sortableHead("piano", "Piano")}
+                  <TableHead className="whitespace-nowrap text-xs">Provider</TableHead>
+                  {sortableHead("statoAbb", "Stato Abb.")}
+                  {sortableHead("scadenza", "Scadenza")}
+                  {sortableHead("totPagato", "Tot. Pagato")}
+                  <TableHead className="whitespace-nowrap text-xs">Saldo</TableHead>
+                  <TableHead className="whitespace-nowrap text-xs">WhatsApp</TableHead>
+                  <TableHead className="whitespace-nowrap text-xs">Notifiche</TableHead>
+                  {sortableHead("dataRegistrazione", "Data Reg.")}
+                  {sortableHead("ultimoAccesso", "Ultimo Accesso")}
+                  <TableHead className="whitespace-nowrap text-xs">Azioni</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paged.length === 0 && (
-                  <TableRow><TableCell colSpan={14} className="text-center py-8 text-muted-foreground">Nessun utente trovato</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={14} className="text-center py-10 text-muted-foreground">
+                      Nessun utente trovato
+                    </TableCell>
+                  </TableRow>
                 )}
                 {paged.map(u => (
-                  <TableRow key={u.email}>
-                    <TableCell className="whitespace-nowrap font-medium">
+                  <TableRow key={u.email} className="group">
+                    <TableCell className="whitespace-nowrap font-medium text-sm">
                       {u.nome}
-                      {u.isCurrentAdmin && <Badge className="ml-2 bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-[10px] px-1.5">Tu</Badge>}
+                      {u.isCurrentAdmin && (
+                        <Badge className="ml-2 bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-[10px] px-1.5 py-0">Tu</Badge>
+                      )}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground max-w-[180px] truncate">{u.email}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{u.email}</TableCell>
                     <TableCell>{roleBadge(u.ruolo)}</TableCell>
                     <TableCell>{pianoBadge(u.piano)}</TableCell>
                     <TableCell>{providerBadge(u.provider)}</TableCell>
                     <TableCell>{statoBadge(u.statoAbb)}</TableCell>
-                    <TableCell className="text-sm whitespace-nowrap">{u.scadenza}</TableCell>
-                    <TableCell className="text-sm whitespace-nowrap">{u.totPagato}</TableCell>
-                    <TableCell className="text-sm whitespace-nowrap">{u.saldo}</TableCell>
-                    <TableCell className="text-sm whitespace-nowrap">
+                    <TableCell className="text-xs whitespace-nowrap">{u.scadenza}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">{u.totPagato}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">{u.saldo}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
                       {u.whatsapp !== "—" ? (
-                        <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-emerald-600" />{u.whatsapp}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Phone className="h-3 w-3 text-emerald-600" />
+                          {u.whatsapp}
+                        </span>
                       ) : "—"}
                     </TableCell>
                     <TableCell>
-                      <Switch checked={u.notifiche} onCheckedChange={() => handleToggleNotifiche(u.email)} />
+                      <Switch
+                        checked={u.notifiche}
+                        onCheckedChange={() => handleToggleNotifiche(u.email)}
+                      />
                     </TableCell>
-                    <TableCell className="text-sm whitespace-nowrap">{u.dataRegistrazione}</TableCell>
-                    <TableCell className="text-sm whitespace-nowrap">{u.ultimoAccesso}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">{u.dataRegistrazione}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">{u.ultimoAccesso}</TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Modifica" onClick={() => toast({ title: "Modifica utente", description: u.nome })}>
-                          <Edit className="h-3.5 w-3.5" />
+                      <div className="flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs gap-1"
+                          onClick={() => toast({ title: "Modifica utente", description: u.nome })}
+                        >
+                          <Edit className="h-3 w-3" /> Modifica
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Password" onClick={() => toast({ title: "Reset password", description: u.email })}>
-                          <KeyRound className="h-3.5 w-3.5" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs gap-1"
+                          onClick={() => toast({ title: "Reset password", description: u.email })}
+                        >
+                          <KeyRound className="h-3 w-3" /> Password
                         </Button>
                         {!u.isCurrentAdmin && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="Elimina" onClick={() => handleDelete(u.email, u.nome)}>
-                            <Trash2 className="h-3.5 w-3.5" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(u.email, u.nome)}
+                          >
+                            <Trash2 className="h-3 w-3" /> Elimina
                           </Button>
                         )}
                       </div>
@@ -295,11 +334,17 @@ const AdminUsers = () => {
             </Table>
           </div>
           {totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 border-t">
-              <p className="text-sm text-muted-foreground">Pagina {page + 1} di {totalPages}</p>
+            <div className="flex items-center justify-between px-5 py-3 border-t">
+              <p className="text-xs text-muted-foreground">
+                Pagina {page + 1} di {totalPages}
+              </p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Precedente</Button>
-                <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Successiva</Button>
+                <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+                  Precedente
+                </Button>
+                <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+                  Successiva
+                </Button>
               </div>
             </div>
           )}
