@@ -9,6 +9,7 @@ const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -24,7 +25,7 @@ const RegisterPage = () => {
     if (password !== confirmPassword) { setError("Le password non corrispondono."); return; }
 
     setLoading(true);
-    const { error: authError } = await supabase.auth.signUp({
+    const { data: signUpData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: window.location.origin },
@@ -40,10 +41,17 @@ const RegisterPage = () => {
       return;
     }
 
+    // Save phone to profile if provided
+    if (phone.trim() && signUpData.user) {
+      await supabase
+        .from("profiles")
+        .update({ phone: phone.trim() })
+        .eq("id", signUpData.user.id);
+    }
+
     setSuccess(true);
     setLoading(false);
   };
-
   if (success) {
     return (
       <div className="min-h-svh flex flex-col bg-background">
