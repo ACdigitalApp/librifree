@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
-import LanguageSelector from "@/components/LanguageSelector";
 import { useRecentBooks, usePopularBooks, useCategoriesWithCount } from "@/hooks/useBooks";
 import { useBookOfTheDay } from "@/hooks/useBookOfTheDay";
 import { useTotalBookCount } from "@/hooks/useTotalBookCount";
@@ -10,6 +9,7 @@ import SEOHead from "@/components/SEOHead";
 import { SITE_URL } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import BookCover from "@/components/BookCover";
+import AuthHeader from "@/components/AuthHeader";
 
 function BookCard({ book }: { book: BookWithCategory }) {
   return (
