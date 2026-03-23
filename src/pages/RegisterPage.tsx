@@ -102,7 +102,7 @@ const RegisterPage = () => {
               <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
               <Input
                 type="password"
-                placeholder="Minimo 8 caratteri"
+                placeholder="Minimo 6 caratteri"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
