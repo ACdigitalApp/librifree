@@ -20,7 +20,7 @@ const RegisterPage = () => {
 
     if (!email.trim()) { setError("L'email è obbligatoria."); return; }
     if (!password) { setError("La password è obbligatoria."); return; }
-    if (password.length < 6) { setError("La password deve contenere almeno 8 caratteri."); return; }
+    if (password.length < 6) { setError("La password deve contenere almeno 6 caratteri."); return; }
     if (password !== confirmPassword) { setError("Le password non corrispondono."); return; }
 
     setLoading(true);
@@ -102,7 +102,7 @@ const RegisterPage = () => {
               <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
               <Input
                 type="password"
-                placeholder="Minimo 8 caratteri"
+                placeholder="Minimo 6 caratteri"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
