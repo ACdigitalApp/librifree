@@ -30,6 +30,7 @@ const AdminUsers = lazy(() => import("./pages/AdminUsers.tsx"));
 const BankCoordinates = lazy(() => import("./pages/BankCoordinates.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const ChiSiamo = lazy(() => import("./pages/ChiSiamo.tsx"));
+const Pricing = lazy(() => import("./pages/Pricing.tsx"));
 
 // SEO content pages
 const CharactersPage = lazy(() => import("./pages/SEOContentPage.tsx").then((m) => ({ default: m.CharactersPage })));
@@ -81,6 +82,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/biblioteca" element={<Library />} />
                   <Route path="/chi-siamo" element={<ChiSiamo />} />
+                  <Route path="/abbonamento" element={<Pricing />} />
                   <Route path="/accedi" element={<LoginPage />} />
                   <Route path="/registrazione" element={<RegisterPage />} />
                   <Route path="/password-dimenticata" element={<ForgotPasswordPage />} />
