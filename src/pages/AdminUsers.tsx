@@ -1,357 +1,484 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
-  ArrowLeft, RefreshCw, UserPlus, Search, ChevronUp, ChevronDown,
-  Edit, KeyRound, Trash2, Phone, DollarSign, TrendingUp, Users,
-  Calendar, Clock, XCircle
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from "@/hooks/use-toast";
+  Users, Shield, ShieldCheck, Phone, Save, Loader2, RefreshCw,
+  Search, Trash2, TrendingUp, UserPlus,
+  Crown, Ban, CheckCircle2, Calendar, Euro,
+  AlertTriangle, UserCheck,
+} from 'lucide-react';
 
-type UserRecord = {
-  nome: string;
+const CROSS_APP_APIS: Record<string, { label: string; url: string }> = {
+  gestionepassword: { label: 'Gestione Password', url: 'https://bilingual-pwd-mgr.emergent.host/admin/revenue' },
+  gestionescadenze: { label: 'Gestione Scadenze', url: 'https://gestione-scadenze-app.vercel.app/api/admin/revenue' },
+  speakeasy: { label: 'SpeakEasy', url: 'https://speaklivetranslate-backend.up.railway.app/api/admin/revenue' },
+  librifree: { label: 'Librifree', url: '' }, // computed locally
+};
+interface CrossAppData { amount: number; users: number; loading: boolean; }
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type AppRole = 'admin' | 'moderator' | 'user';
+
+interface UserRecord {
+  id: string;
+  display_name: string | null;
+  email: string | null;
+  phone: string | null;
+  created_at: string;
+  updated_at: string;
+  role: AppRole;
+  subscription_plan: string;
+  subscription_status: string;
+  trial_end_date: string | null;
+  notification_enabled: boolean;
+}
+
+interface EditForm {
+  display_name: string;
+  phone: string;
+  notification_enabled: boolean;
+  role: AppRole;
+  subscription_plan: string;
+  subscription_status: string;
+  trial_end_date: string;
+}
+
+interface NewUserForm {
+  display_name: string;
   email: string;
-  ruolo: "Admin" | "User" | "User Pro";
-  piano: string;
-  provider: string;
-  statoAbb: string;
-  scadenza: string;
-  totPagato: string;
-  saldo: string;
-  whatsapp: string;
-  notifiche: boolean;
-  dataRegistrazione: string;
-  ultimoAccesso: string;
-  isCurrentAdmin?: boolean;
+  password: string;
+  role: AppRole;
+  subscription_plan: string;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Attivo', trialing: 'Trial', cancelled: 'Cancellato',
+  blocked: 'Bloccato', expired: 'Scaduto',
+};
+const STATUS_COLORS: Record<string, string> = {
+  active: 'bg-green-50 text-green-700 border-green-200',
+  trialing: 'bg-blue-50 text-blue-700 border-blue-200',
+  cancelled: 'bg-gray-100 text-gray-600 border-gray-200',
+  blocked: 'bg-red-50 text-red-700 border-red-200',
+  expired: 'bg-orange-50 text-orange-700 border-orange-200',
 };
 
-const DEMO_USERS: UserRecord[] = [
-  { nome: "Admin Acaridi", email: "admin@speaklivetranslate.it", ruolo: "Admin", piano: "Trial", provider: "Demo", statoAbb: "In Trial", scadenza: "28 mar 2026", totPagato: "€0.00", saldo: "€0.00", whatsapp: "—", notifiche: true, dataRegistrazione: "—", ultimoAccesso: "—" },
-  { nome: "Mario Rossi", email: "mario@example.com", ruolo: "User Pro", piano: "Monthly", provider: "Stripe", statoAbb: "Attivo", scadenza: "20 apr 2025", totPagato: "€23.97", saldo: "€23.97", whatsapp: "—", notifiche: true, dataRegistrazione: "—", ultimoAccesso: "—" },
-  { nome: "Giulia Bianchi", email: "giulia@example.com", ruolo: "User", piano: "Yearly", provider: "App Store", statoAbb: "Attivo", scadenza: "22 gen 2026", totPagato: "€49.99", saldo: "€49.99", whatsapp: "—", notifiche: false, dataRegistrazione: "—", ultimoAccesso: "—" },
-  { nome: "Luca Verdi", email: "luca@example.com", ruolo: "User", piano: "Free", provider: "Google Play", statoAbb: "Scaduto", scadenza: "17 feb 2025", totPagato: "€0.00", saldo: "€0.00", whatsapp: "—", notifiche: true, dataRegistrazione: "—", ultimoAccesso: "—" },
-  { nome: "Sara Neri", email: "sara@example.com", ruolo: "User", piano: "Free", provider: "Demo", statoAbb: "Annullato", scadenza: "—", totPagato: "€0.00", saldo: "€0.00", whatsapp: "—", notifiche: true, dataRegistrazione: "—", ultimoAccesso: "—" },
-  { nome: "Francesco", email: "francescomariacaridi@gmail.com", ruolo: "User", piano: "—", provider: "—", statoAbb: "—", scadenza: "—", totPagato: "—", saldo: "—", whatsapp: "—", notifiche: false, dataRegistrazione: "21 feb 2026", ultimoAccesso: "21 feb 2026 03:23" },
-  { nome: "Armando Forgione", email: "armando.forgione@gmail.com", ruolo: "User Pro", piano: "—", provider: "—", statoAbb: "—", scadenza: "—", totPagato: "—", saldo: "—", whatsapp: "3473224249", notifiche: true, dataRegistrazione: "15 feb 2026", ultimoAccesso: "—" },
-  { nome: "Gianluigi Scanga", email: "gianniscanga@yahoo.com", ruolo: "User Pro", piano: "—", provider: "—", statoAbb: "—", scadenza: "—", totPagato: "—", saldo: "—", whatsapp: "3285990810", notifiche: true, dataRegistrazione: "20 feb 2026", ultimoAccesso: "20 feb 2026 17:51" },
-  { nome: "Antonio Caridi", email: "acaridi57@gmail.com", ruolo: "Admin", piano: "—", provider: "—", statoAbb: "—", scadenza: "—", totPagato: "—", saldo: "—", whatsapp: "3357218363", notifiche: true, dataRegistrazione: "24 dic 2025", ultimoAccesso: "23 mar 2026 19:25", isCurrentAdmin: true },
-  { nome: "Revisione", email: "revisionegestscad@gmail.com", ruolo: "User Pro", piano: "—", provider: "—", statoAbb: "—", scadenza: "—", totPagato: "—", saldo: "—", whatsapp: "—", notifiche: true, dataRegistrazione: "27 gen 2026", ultimoAccesso: "09 feb 2026 16:42" },
-  { nome: "Daniele Manconi", email: "info@danielemanconi.it", ruolo: "User Pro", piano: "—", provider: "—", statoAbb: "—", scadenza: "—", totPagato: "—", saldo: "—", whatsapp: "+39337875540", notifiche: true, dataRegistrazione: "15 feb 2026", ultimoAccesso: "16 feb 2026 09:29" },
-  { nome: "baldonic@gmail.com", email: "baldonic@gmail.com", ruolo: "User Pro", piano: "—", provider: "—", statoAbb: "—", scadenza: "—", totPagato: "—", saldo: "—", whatsapp: "+393357809000", notifiche: true, dataRegistrazione: "19 gen 2026", ultimoAccesso: "15 feb 2026 09:02" },
-];
-
-const KPI_DATA: { label: string; value: string; icon: React.ElementType; iconBg: string; iconColor: string }[] = [
-  { label: "Incasso Totale", value: "€73.96", icon: DollarSign, iconBg: "bg-emerald-50", iconColor: "text-emerald-600" },
-  { label: "Saldo Totale", value: "€73.96", icon: TrendingUp, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-  { label: "Utenti Paganti", value: "2", icon: Users, iconBg: "bg-violet-50", iconColor: "text-violet-600" },
-  { label: "Ultimi 30gg", value: "€0.00", icon: Calendar, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
-  { label: "Trial Attive", value: "1", icon: Clock, iconBg: "bg-orange-50", iconColor: "text-orange-600" },
-  { label: "Scaduti", value: "1", icon: XCircle, iconBg: "bg-red-50", iconColor: "text-red-600" },
-];
-
-function roleBadge(ruolo: string) {
-  const cls: Record<string, string> = {
-    Admin: "bg-red-50 text-red-700 border-red-200",
-    "User Pro": "bg-amber-50 text-amber-700 border-amber-200",
-    User: "bg-blue-50 text-blue-700 border-blue-200",
-  };
-  return <Badge className={`${cls[ruolo] || cls.User} hover:opacity-90 text-xs`}>{ruolo}</Badge>;
+function getRoleBadge(role: AppRole, plan: string) {
+  if (role === 'admin') return <Badge className="bg-green-500 text-white text-xs gap-1"><Shield className="w-3 h-3" />Admin</Badge>;
+  if (role === 'moderator') return <Badge className="bg-blue-500 text-white text-xs gap-1"><Shield className="w-3 h-3" />Moderatore</Badge>;
+  if (plan === 'premium' || plan === 'pro') return <Badge className="bg-yellow-400 text-yellow-900 text-xs gap-1 font-semibold"><Crown className="w-3 h-3" />User Pro</Badge>;
+  return <Badge variant="secondary" className="text-xs">User</Badge>;
 }
 
-function statoBadge(stato: string) {
-  const map: Record<string, string> = {
-    Attivo: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    "In Trial": "bg-orange-50 text-orange-700 border-orange-200",
-    Scaduto: "bg-red-50 text-red-700 border-red-200",
-    Annullato: "bg-gray-100 text-gray-500 border-gray-200",
-  };
-  if (!map[stato]) return <span className="text-muted-foreground text-xs">—</span>;
-  return <Badge className={`${map[stato]} hover:opacity-90 text-xs`}>{stato}</Badge>;
+function getPlanBadge(plan: string) {
+  if (plan === 'premium' || plan === 'pro') return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300 text-xs gap-1"><Crown className="w-3 h-3" />{plan === 'pro' ? 'Pro' : 'Premium'}</Badge>;
+  return <Badge variant="outline" className="text-xs text-muted-foreground">{plan || 'Free'}</Badge>;
 }
 
-function pianoBadge(piano: string) {
-  const map: Record<string, string> = {
-    Trial: "bg-orange-50 text-orange-600 border-orange-200",
-    Monthly: "bg-blue-50 text-blue-600 border-blue-200",
-    Yearly: "bg-violet-50 text-violet-600 border-violet-200",
-    Free: "bg-gray-50 text-gray-500 border-gray-200",
-  };
-  if (!map[piano]) return <span className="text-muted-foreground text-xs">—</span>;
-  return <Badge className={`${map[piano]} hover:opacity-90 text-xs`}>{piano}</Badge>;
+function getStatusBadge(status: string) {
+  const label = STATUS_LABELS[status] || status;
+  const color = STATUS_COLORS[status] || STATUS_COLORS.active;
+  return <Badge variant="outline" className={`text-xs font-medium ${color}`}>{label}</Badge>;
 }
 
-function providerBadge(provider: string) {
-  if (provider === "—") return <span className="text-muted-foreground text-xs">—</span>;
-  return <Badge variant="outline" className="text-xs font-normal">{provider}</Badge>;
+function formatDate(d: string | null) {
+  if (!d) return '—';
+  try { return format(new Date(d), 'dd/MM/yy HH:mm', { locale: it }); } catch { return d.split('T')[0]; }
 }
 
-type SortKey = "nome" | "email" | "ruolo" | "piano" | "statoAbb" | "scadenza" | "totPagato" | "dataRegistrazione" | "ultimoAccesso";
-
-const PAGE_SIZE = 15;
-
-const AdminUsers = () => {
-  const navigate = useNavigate();
-  const [users, setUsers] = useState<UserRecord[]>(DEMO_USERS);
-  const [search, setSearch] = useState("");
-  const [filterPiano, setFilterPiano] = useState("all");
-  const [filterStato, setFilterStato] = useState("all");
-  const [sortKey, setSortKey] = useState<SortKey>("nome");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [page, setPage] = useState(0);
-
-  const filtered = useMemo(() => {
-    let list = [...users];
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter(u => u.nome.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
-    }
-    if (filterPiano !== "all") list = list.filter(u => u.piano === filterPiano);
-    if (filterStato !== "all") list = list.filter(u => u.statoAbb === filterStato);
-    list.sort((a, b) => {
-      const av = (a[sortKey] ?? "").toLowerCase();
-      const bv = (b[sortKey] ?? "").toLowerCase();
-      return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
-    });
-    return list;
-  }, [users, search, filterPiano, filterStato, sortKey, sortDir]);
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-
-  const toggleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir("asc"); }
-  };
-
-  const SortIcon = ({ col }: { col: SortKey }) => {
-    if (sortKey !== col) return <ChevronUp className="h-3 w-3 opacity-20" />;
-    return sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />;
-  };
-
-  const handleToggleNotifiche = (email: string) => {
-    setUsers(prev => prev.map(u => u.email === email ? { ...u, notifiche: !u.notifiche } : u));
-  };
-
-  const handleDelete = (email: string, nome: string) => {
-    if (!confirm(`Eliminare l'utente "${nome}"?`)) return;
-    setUsers(prev => prev.filter(u => u.email !== email));
-    toast({ title: "Utente eliminato", description: nome });
-  };
-
-  const sortableHead = (key: SortKey, label: string) => (
-    <TableHead
-      className="cursor-pointer select-none whitespace-nowrap text-xs"
-      onClick={() => toggleSort(key)}
-    >
-      <span className="inline-flex items-center gap-1">{label} <SortIcon col={key} /></span>
-    </TableHead>
+function StatCard({ icon: Icon, label, value, color = 'text-primary' }: {
+  icon: React.ElementType; label: string; value: string | number; color?: string;
+}) {
+  return (
+    <Card className="border border-border/60">
+      <CardContent className="pt-4 pb-4">
+        <div className="flex flex-col items-center gap-1 text-center">
+          <div className={`p-2 rounded-lg bg-primary/5 ${color}`}><Icon className="w-5 h-5" /></div>
+          <p className="text-xl font-bold">{value}</p>
+          <p className="text-xs text-muted-foreground">{label}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+export default function AdminUsers() {
+  const { toast } = useToast();
+
+  const [users, setUsers] = useState<UserRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [blocking, setBlocking] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<EditForm>({
+    display_name: '', phone: '', notification_enabled: false,
+    role: 'user', subscription_plan: 'free', subscription_status: 'active', trial_end_date: '',
+  });
+  const [search, setSearch] = useState('');
+  const [filterPlan, setFilterPlan] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [showNewUser, setShowNewUser] = useState(false);
+  const [newUserForm, setNewUserForm] = useState<NewUserForm>({
+    display_name: '', email: '', password: '', role: 'user', subscription_plan: 'free',
+  });
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [crossApp, setCrossApp] = useState<Record<string, CrossAppData>>({
+    gestionepassword: { amount: 0, users: 0, loading: true },
+    gestionescadenze: { amount: 0, users: 0, loading: true },
+    speakeasy: { amount: 0, users: 0, loading: true },
+    librifree: { amount: 0, users: 0, loading: false },
+  });
+
+  const fetchCrossAppRevenue = useCallback(async () => {
+    for (const [key, cfg] of Object.entries(CROSS_APP_APIS)) {
+      if (!cfg.url) continue;
+      try {
+        const res = await fetch(cfg.url, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          const d = await res.json();
+          setCrossApp(prev => ({ ...prev, [key]: { amount: d.total_revenue ?? 0, users: d.paying_users ?? 0, loading: false } }));
+        } else {
+          setCrossApp(prev => ({ ...prev, [key]: { amount: 0, users: 0, loading: false } }));
+        }
+      } catch {
+        setCrossApp(prev => ({ ...prev, [key]: { amount: 0, users: 0, loading: false } }));
+      }
+    }
+  }, []);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, display_name, email, phone, created_at, updated_at')
+        .order('created_at', { ascending: false });
+      if (error || !profiles) { toast({ title: 'Errore caricamento utenti', variant: 'destructive' }); return; }
+      const { data: rolesData } = await supabase.from('user_roles').select('user_id, role');
+      const merged: UserRecord[] = profiles.map(p => ({
+        id: p.id, display_name: p.display_name, email: p.email, phone: p.phone,
+        created_at: p.created_at, updated_at: p.updated_at,
+        role: (rolesData?.find((r: { user_id: string; role: string }) => r.user_id === p.id)?.role as AppRole) || 'user',
+        subscription_plan: 'free', subscription_status: 'active',
+        trial_end_date: null, notification_enabled: false,
+      }));
+      setUsers(merged);
+    } catch { toast({ title: 'Errore', variant: 'destructive' }); }
+    finally { setLoading(false); }
+  }, [toast]);
+
+  useEffect(() => { fetchUsers(); fetchCrossAppRevenue(); }, [fetchUsers, fetchCrossAppRevenue]);
+
+  const stats = {
+    incassoTotale: 0, saldoTotale: 0,
+    utentiPaganti: users.filter(u => u.subscription_plan === 'premium' || u.subscription_plan === 'pro').length,
+    ultimi30gg: 0,
+    trialAttive: users.filter(u => u.subscription_status === 'trialing').length,
+    scaduti: users.filter(u => u.subscription_status === 'expired').length,
+  };
+
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase();
+    return (
+      ((u.display_name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)) &&
+      (filterPlan === 'all' || u.subscription_plan === filterPlan) &&
+      (filterStatus === 'all' || u.subscription_status === filterStatus)
+    );
+  });
+
+  const startEditing = (u: UserRecord) => {
+    setEditingUser(u.id);
+    setEditForm({
+      display_name: u.display_name || '', phone: u.phone || '',
+      notification_enabled: u.notification_enabled, role: u.role,
+      subscription_plan: u.subscription_plan, subscription_status: u.subscription_status,
+      trial_end_date: u.trial_end_date ? u.trial_end_date.split('T')[0] : '',
+    });
+  };
+
+  const saveUser = async (userId: string) => {
+    try {
+      setSaving(userId);
+      await supabase.from('profiles').update({ display_name: editForm.display_name || null, phone: editForm.phone || null }).eq('id', userId);
+      await supabase.from('user_roles').upsert({ user_id: userId, role: editForm.role }, { onConflict: 'user_id' });
+      toast({ title: 'Utente aggiornato con successo' });
+      setEditingUser(null);
+      fetchUsers();
+    } catch { toast({ title: 'Errore salvataggio', variant: 'destructive' }); }
+    finally { setSaving(null); }
+  };
+
+  const toggleBlock = async (u: UserRecord) => {
+    setBlocking(u.id);
+    const newStatus = u.subscription_status === 'blocked' ? 'active' : 'blocked';
+    setUsers(prev => prev.map(x => x.id === u.id ? { ...x, subscription_status: newStatus } : x));
+    toast({ title: newStatus === 'blocked' ? 'Utente bloccato' : 'Utente sbloccato' });
+    setBlocking(null);
+  };
+
+  const deleteUser = async (userId: string) => {
+    try {
+      setDeleting(userId);
+      await supabase.from('profiles').delete().eq('id', userId);
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      toast({ title: 'Utente eliminato' });
+    } finally { setDeleting(null); }
+  };
+
+  const createUser = async () => {
+    if (!newUserForm.email || !newUserForm.password) { toast({ title: 'Email e password obbligatori', variant: 'destructive' }); return; }
+    try {
+      setCreatingUser(true);
+      const { data, error } = await supabase.auth.signUp({
+        email: newUserForm.email, password: newUserForm.password,
+        options: { data: { display_name: newUserForm.display_name } },
+      });
+      if (error) { toast({ title: 'Errore: ' + error.message, variant: 'destructive' }); return; }
+      if (data.user && newUserForm.role !== 'user') {
+        await supabase.from('user_roles').insert({ user_id: data.user.id, role: newUserForm.role });
+      }
+      toast({ title: 'Utente creato con successo' });
+      setShowNewUser(false);
+      setNewUserForm({ display_name: '', email: '', password: '', role: 'user', subscription_plan: 'free' });
+      fetchUsers();
+    } catch { toast({ title: 'Errore creazione utente', variant: 'destructive' }); }
+    finally { setCreatingUser(false); }
+  };
+
+  if (loading) return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="p-4 md:p-6 max-w-full mx-auto space-y-5">
       {/* Header */}
-      <div className="border-b bg-background sticky top-0 z-10">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/admin")} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="min-w-0">
-              <h1 className="text-xl font-bold truncate">Gestione Utenti</h1>
-              <p className="text-sm text-muted-foreground">Amministra utenti, piani e incassi</p>
-            </div>
+      <div className="flex items-center justify-between gap-4">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
+          <ShieldCheck className="w-7 h-7 text-primary" />
+          <div>
+            <h1 className="text-2xl font-bold text-primary">Gestione Utenti</h1>
+            <p className="text-xs text-muted-foreground">Amministra utenti, piani e incassi</p>
           </div>
-          <div className="flex gap-2 shrink-0">
-            <Button variant="outline" size="sm" onClick={() => toast({ title: "Dati aggiornati" })}>
-              <RefreshCw className="h-4 w-4 mr-1.5" /> Aggiorna
-            </Button>
-            <Button size="sm" onClick={() => toast({ title: "Funzione in arrivo", description: "Creazione nuovo utente" })}>
-              <UserPlus className="h-4 w-4 mr-1.5" /> Nuovo Utente
-            </Button>
-          </div>
+        </motion.div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchUsers} className="gap-2"><RefreshCw className="w-4 h-4" />Aggiorna</Button>
+          <Button size="sm" onClick={() => setShowNewUser(true)} className="gap-2"><UserPlus className="w-4 h-4" />Nuovo Utente</Button>
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {KPI_DATA.map(k => {
-            const Icon = k.icon;
+      {/* Stats */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        <StatCard icon={Euro} label="Incasso Totale" value={`€${stats.incassoTotale.toFixed(2)}`} color="text-green-600" />
+        <StatCard icon={TrendingUp} label="Saldo Totale" value={`€${stats.saldoTotale.toFixed(2)}`} color="text-blue-600" />
+        <StatCard icon={UserCheck} label="Utenti Paganti" value={stats.utentiPaganti} color="text-yellow-600" />
+        <StatCard icon={Euro} label="Ultimi 30gg" value={`€${stats.ultimi30gg.toFixed(2)}`} color="text-purple-600" />
+        <StatCard icon={Calendar} label="Trial Attive" value={stats.trialAttive} color="text-cyan-600" />
+        <StatCard icon={AlertTriangle} label="Scaduti" value={stats.scaduti} color="text-red-500" />
+      </div>
+
+      {/* Incassi Tutte le App */}
+      <Card>
+        <div className="p-4 border-b flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <TrendingUp className="w-4 h-4" /> Incassi Tutte le App
+          </div>
+          <span className="text-sm font-bold text-primary">
+            Totale Generale: €{Object.values(crossApp).reduce((s, d) => s + (d.loading ? 0 : d.amount), 0).toFixed(2)}
+          </span>
+        </div>
+        <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Object.entries(CROSS_APP_APIS).map(([key, cfg]) => {
+            const d = crossApp[key];
             return (
-              <Card key={k.label} className="border">
-                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                  <div className={`h-10 w-10 rounded-full ${k.iconBg} flex items-center justify-center`}>
-                    <Icon className={`h-5 w-5 ${k.iconColor}`} />
-                  </div>
-                  <div>
-                    <p className="text-xl font-bold">{k.value}</p>
-                    <p className="text-xs text-muted-foreground">{k.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={key} className="rounded-xl border p-4 flex flex-col gap-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{cfg.label}</p>
+                {d?.loading
+                  ? <div className="flex items-center gap-2 mt-1"><Loader2 className="w-4 h-4 animate-spin opacity-60" /><span className="text-sm opacity-60">Caricamento...</span></div>
+                  : <>
+                      <p className="text-2xl font-bold text-primary">€{(d?.amount ?? 0).toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">{d?.users ?? 0} utenti paganti</p>
+                    </>
+                }
+              </div>
             );
           })}
         </div>
+      </Card>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Cerca nome o email..."
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPage(0); }}
-              className="pl-9"
-            />
+      {/* Table */}
+      <Card>
+        <div className="p-4 flex flex-wrap items-center gap-3 border-b">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="Cerca nome o email..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-8 text-sm" />
           </div>
-          <Select value={filterPiano} onValueChange={v => { setFilterPiano(v); setPage(0); }}>
-            <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="Tutti i piani" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tutti i piani</SelectItem>
-              <SelectItem value="Trial">Trial</SelectItem>
-              <SelectItem value="Monthly">Monthly</SelectItem>
-              <SelectItem value="Yearly">Yearly</SelectItem>
-              <SelectItem value="Free">Free</SelectItem>
-            </SelectContent>
+          <Select value={filterPlan} onValueChange={setFilterPlan}>
+            <SelectTrigger className="h-8 w-36 text-xs"><SelectValue placeholder="Tutti i piani" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">Tutti i piani</SelectItem><SelectItem value="free">Free</SelectItem><SelectItem value="premium">Premium</SelectItem><SelectItem value="pro">Pro</SelectItem></SelectContent>
           </Select>
-          <Select value={filterStato} onValueChange={v => { setFilterStato(v); setPage(0); }}>
-            <SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="Tutti gli stati" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tutti gli stati</SelectItem>
-              <SelectItem value="In Trial">In Trial</SelectItem>
-              <SelectItem value="Attivo">Attivo</SelectItem>
-              <SelectItem value="Scaduto">Scaduto</SelectItem>
-              <SelectItem value="Annullato">Annullato</SelectItem>
-            </SelectContent>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="h-8 w-36 text-xs"><SelectValue placeholder="Tutti gli stati" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">Tutti gli stati</SelectItem><SelectItem value="active">Attivo</SelectItem><SelectItem value="trialing">Trial</SelectItem><SelectItem value="blocked">Bloccato</SelectItem><SelectItem value="expired">Scaduto</SelectItem></SelectContent>
           </Select>
         </div>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="text-xs">
+                <TableHead>Nome</TableHead><TableHead>Email</TableHead><TableHead>Ruolo</TableHead>
+                <TableHead>Piano</TableHead><TableHead>Provider</TableHead><TableHead>Stato Abb.</TableHead>
+                <TableHead>Scadenza</TableHead><TableHead>Tot. Pagato</TableHead><TableHead>Saldo</TableHead>
+                <TableHead>WhatsApp</TableHead><TableHead>Notifiche</TableHead>
+                <TableHead>Data Reg.</TableHead><TableHead>Ultimo Accesso</TableHead>
+                <TableHead className="text-right">Azioni</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
+                <TableCell colSpan={14} className="py-1 px-4 text-xs font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" />Utenti Registrati ({filtered.length})</div>
+                </TableCell>
+              </TableRow>
+              {filtered.length === 0
+                ? <TableRow><TableCell colSpan={14} className="text-center py-10 text-muted-foreground text-sm">Nessun utente trovato</TableCell></TableRow>
+                : filtered.map(u => {
+                  const isEditing = editingUser === u.id;
+                  return (
+                    <TableRow key={u.id} className={isEditing ? 'bg-primary/5' : ''}>
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${u.role === 'admin' ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-primary to-primary/70'}`}>
+                            {(u.display_name || u.email || 'U')[0].toUpperCase()}
+                          </div>
+                          {isEditing
+                            ? <Input value={editForm.display_name} onChange={e => setEditForm({ ...editForm, display_name: e.target.value })} className="w-28 h-7 text-xs" />
+                            : <span className="text-sm font-medium">{u.display_name || '—'}</span>}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{u.email || '—'}</TableCell>
+                      <TableCell>
+                        {isEditing
+                          ? <Select value={editForm.role} onValueChange={(v: AppRole) => setEditForm({ ...editForm, role: v })}><SelectTrigger className="w-28 h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="user">User</SelectItem><SelectItem value="moderator">Moderatore</SelectItem><SelectItem value="admin">Admin</SelectItem></SelectContent></Select>
+                          : getRoleBadge(u.role, u.subscription_plan)}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing
+                          ? <Select value={editForm.subscription_plan} onValueChange={v => setEditForm({ ...editForm, subscription_plan: v })}><SelectTrigger className="w-24 h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="free">Free</SelectItem><SelectItem value="premium">Premium</SelectItem><SelectItem value="pro">Pro</SelectItem></SelectContent></Select>
+                          : getPlanBadge(u.subscription_plan)}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">—</TableCell>
+                      <TableCell>
+                        {isEditing
+                          ? <Select value={editForm.subscription_status} onValueChange={v => setEditForm({ ...editForm, subscription_status: v })}><SelectTrigger className="w-28 h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Attivo</SelectItem><SelectItem value="trialing">Trial</SelectItem><SelectItem value="cancelled">Cancellato</SelectItem><SelectItem value="blocked">Bloccato</SelectItem><SelectItem value="expired">Scaduto</SelectItem></SelectContent></Select>
+                          : getStatusBadge(u.subscription_status)}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {isEditing ? <Input type="date" value={editForm.trial_end_date} onChange={e => setEditForm({ ...editForm, trial_end_date: e.target.value })} className="w-32 h-7 text-xs" /> : (u.trial_end_date ? formatDate(u.trial_end_date) : '—')}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">—</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">—</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {isEditing
+                          ? <Input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} placeholder="+39..." className="w-28 h-7 text-xs" />
+                          : <span className="text-xs flex items-center gap-1">{u.phone ? <><span className="text-green-600">📞</span>{u.phone}</> : <span className="text-muted-foreground">—</span>}</span>}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? <Switch checked={editForm.notification_enabled} onCheckedChange={c => setEditForm({ ...editForm, notification_enabled: c })} /> : <Switch checked={u.notification_enabled} disabled />}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.created_at)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.updated_at)}</TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        {isEditing
+                          ? <div className="flex items-center justify-end gap-1">
+                              <Button size="sm" variant="ghost" onClick={() => setEditingUser(null)} className="h-7 text-xs">Annulla</Button>
+                              <Button size="sm" onClick={() => saveUser(u.id)} disabled={saving === u.id} className="h-7 text-xs gap-1">
+                                {saving === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}Salva
+                              </Button>
+                            </div>
+                          : <div className="flex items-center justify-end gap-1">
+                              <Button size="sm" variant="outline" onClick={() => startEditing(u)} className="h-7 text-xs">Modifica</Button>
+                              <Button size="sm" variant="ghost" onClick={() => toggleBlock(u)} disabled={blocking === u.id} title={u.subscription_status === 'blocked' ? 'Sblocca' : 'Blocca'}
+                                className={`h-7 w-7 p-0 ${u.subscription_status === 'blocked' ? 'text-green-600 hover:bg-green-50' : 'text-orange-500 hover:bg-orange-50'}`}>
+                                {blocking === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> : u.subscription_status === 'blocked' ? <CheckCircle2 className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="ghost" disabled={deleting === u.id} className="h-7 w-7 p-0 text-red-500 hover:bg-red-50">
+                                    {deleting === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader><AlertDialogTitle>Eliminare utente?</AlertDialogTitle><AlertDialogDescription>Stai per eliminare <strong>{u.display_name || u.email}</strong>. Azione irreversibile.</AlertDialogDescription></AlertDialogHeader>
+                                  <AlertDialogFooter><AlertDialogCancel>Annulla</AlertDialogCancel><AlertDialogAction onClick={() => deleteUser(u.id)} className="bg-red-600 hover:bg-red-700">Elimina</AlertDialogAction></AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
 
-        {/* Table */}
-        <Card>
-          <div className="px-5 py-4 border-b flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <h2 className="font-semibold text-sm">Utenti Registrati ({filtered.length})</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {sortableHead("nome", "Nome")}
-                  {sortableHead("email", "Email")}
-                  {sortableHead("ruolo", "Ruolo")}
-                  {sortableHead("piano", "Piano")}
-                  <TableHead className="whitespace-nowrap text-xs">Provider</TableHead>
-                  {sortableHead("statoAbb", "Stato Abb.")}
-                  {sortableHead("scadenza", "Scadenza")}
-                  {sortableHead("totPagato", "Tot. Pagato")}
-                  <TableHead className="whitespace-nowrap text-xs">Saldo</TableHead>
-                  <TableHead className="whitespace-nowrap text-xs">WhatsApp</TableHead>
-                  <TableHead className="whitespace-nowrap text-xs">Notifiche</TableHead>
-                  {sortableHead("dataRegistrazione", "Data Reg.")}
-                  {sortableHead("ultimoAccesso", "Ultimo Accesso")}
-                  <TableHead className="whitespace-nowrap text-xs">Azioni</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paged.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={14} className="text-center py-10 text-muted-foreground">
-                      Nessun utente trovato
-                    </TableCell>
-                  </TableRow>
-                )}
-                {paged.map(u => (
-                  <TableRow key={u.email} className="group">
-                    <TableCell className="whitespace-nowrap font-medium text-sm">
-                      {u.nome}
-                      {u.isCurrentAdmin && (
-                        <Badge className="ml-2 bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-[10px] px-1.5 py-0">Tu</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{u.email}</TableCell>
-                    <TableCell>{roleBadge(u.ruolo)}</TableCell>
-                    <TableCell>{pianoBadge(u.piano)}</TableCell>
-                    <TableCell>{providerBadge(u.provider)}</TableCell>
-                    <TableCell>{statoBadge(u.statoAbb)}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">{u.scadenza}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">{u.totPagato}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">{u.saldo}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">
-                      {u.whatsapp !== "—" ? (
-                        <span className="inline-flex items-center gap-1">
-                          <Phone className="h-3 w-3 text-emerald-600" />
-                          {u.whatsapp}
-                        </span>
-                      ) : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={u.notifiche}
-                        onCheckedChange={() => handleToggleNotifiche(u.email)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">{u.dataRegistrazione}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">{u.ultimoAccesso}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs gap-1"
-                          onClick={() => toast({ title: "Modifica utente", description: u.nome })}
-                        >
-                          <Edit className="h-3 w-3" /> Modifica
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs gap-1"
-                          onClick={() => toast({ title: "Reset password", description: u.email })}
-                        >
-                          <KeyRound className="h-3 w-3" /> Password
-                        </Button>
-                        {!u.isCurrentAdmin && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(u.email, u.nome)}
-                          >
-                            <Trash2 className="h-3 w-3" /> Elimina
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t">
-              <p className="text-xs text-muted-foreground">
-                Pagina {page + 1} di {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
-                  Precedente
-                </Button>
-                <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
-                  Successiva
-                </Button>
+      {/* Nuovo Utente Dialog */}
+      <Dialog open={showNewUser} onOpenChange={setShowNewUser}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><UserPlus className="w-5 h-5 text-primary" />Nuovo Utente</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div><Label className="text-sm">Nome completo</Label><Input placeholder="Mario Rossi" value={newUserForm.display_name} onChange={e => setNewUserForm({ ...newUserForm, display_name: e.target.value })} className="mt-1" /></div>
+            <div><Label className="text-sm">Email *</Label><Input type="email" value={newUserForm.email} onChange={e => setNewUserForm({ ...newUserForm, email: e.target.value })} className="mt-1" /></div>
+            <div><Label className="text-sm">Password *</Label><Input type="password" value={newUserForm.password} onChange={e => setNewUserForm({ ...newUserForm, password: e.target.value })} className="mt-1" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-sm">Ruolo</Label>
+                <Select value={newUserForm.role} onValueChange={(v: AppRole) => setNewUserForm({ ...newUserForm, role: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="user">User</SelectItem><SelectItem value="moderator">Moderatore</SelectItem><SelectItem value="admin">Admin</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label className="text-sm">Piano</Label>
+                <Select value={newUserForm.subscription_plan} onValueChange={v => setNewUserForm({ ...newUserForm, subscription_plan: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="free">Free</SelectItem><SelectItem value="premium">Premium</SelectItem><SelectItem value="pro">Pro</SelectItem></SelectContent>
+                </Select>
               </div>
             </div>
-          )}
-        </Card>
-      </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewUser(false)}>Annulla</Button>
+            <Button onClick={createUser} disabled={creatingUser} className="gap-2">
+              {creatingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}Crea Utente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default AdminUsers;
+}
