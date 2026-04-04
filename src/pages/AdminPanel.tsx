@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminStats, useAdminBooks, useIsAdmin, useCategories } from "@/hooks/useBooks";
 import { deleteBook, updateBook } from "@/lib/api";
-import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal, ImagePlus } from "lucide-react";
+import { Loader2, Search, Trash2, ExternalLink, LogOut, BookOpen, Eye, Terminal, ImagePlus, Landmark, Users } from "lucide-react";
 import MassImportTool from "@/components/admin/MassImportTool";
 import BankDetails from "@/components/admin/BankDetails";
 import UserManagement from "@/components/admin/UserManagement";
@@ -238,9 +238,17 @@ const AdminPanel = () => {
             </Link>
             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">Admin</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-1" /> Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin/bancari')}>
+              <Landmark className="h-4 w-4 mr-1" /> Dati Bancari
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin/users')}>
+              <Users className="h-4 w-4 mr-1" /> Utenti
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-1" /> Logout
+            </Button>
+          </div>
         </div>
       </nav>
 

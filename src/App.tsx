@@ -27,6 +27,7 @@ const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage.tsx"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin.tsx"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel.tsx"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers.tsx"));
+const BankCoordinates = lazy(() => import("./pages/BankCoordinates.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const ChiSiamo = lazy(() => import("./pages/ChiSiamo.tsx"));
 
@@ -113,6 +114,7 @@ const App = () => (
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPanel /></ProtectedRoute>} />
                   <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
+                  <Route path="/admin/bancari" element={<ProtectedRoute adminOnly><BankCoordinates /></ProtectedRoute>} />
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
