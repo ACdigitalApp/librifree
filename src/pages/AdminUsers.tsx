@@ -8,9 +8,9 @@ import {
 } from 'lucide-react';
 
 const CROSS_APP_APIS: Record<string, { label: string; url: string }> = {
-  gestionepassword: { label: 'Gestione Password', url: 'https://bilingual-pwd-mgr.emergent.host/admin/revenue' },
-  gestionescadenze: { label: 'Gestione Scadenze', url: 'https://gestione-scadenze-app.vercel.app/api/admin/revenue' },
-  speakeasy: { label: 'SpeakEasy', url: 'https://speaklivetranslate-backend.up.railway.app/api/admin/revenue' },
+  gestionepassword: { label: 'Gestione Password', url: 'https://gestionepassword.it/admin/revenue' },
+  gestionescadenze: { label: 'Gestione Scadenze', url: 'https://gestionescadenze.app/api/admin/revenue' },
+  speakeasy: { label: 'SpeakEasy', url: 'https://speaklivetranslate.it/api/admin/revenue' },
   librifree: { label: 'Librifree', url: '' }, // computed locally
 };
 interface CrossAppData { amount: number; users: number; loading: boolean; }
