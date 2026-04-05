@@ -28,6 +28,15 @@ interface LogEntry {
 
 const EMPTY_FORM: BankData = { holder: '', bankName: '', iban: '', bic: '', accountNumber: '', notes: '' };
 
+const DEFAULT_BANK: BankData = {
+  holder: 'CARIDI ANTONIO',
+  bankName: 'Banco BPM',
+  iban: 'IT65F0760116200001010457131',
+  bic: 'BPPIITRXXX',
+  accountNumber: '',
+  notes: '',
+};
+
 export default function BankCoordinates() {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
@@ -58,13 +67,16 @@ export default function BankCoordinates() {
         .eq('user_id', u.id)
         .in('setting_key', BANK_KEYS.map(k => `bank_${k}`));
 
-      if (rows) {
-        const d: BankData = { ...EMPTY_FORM };
+      if (rows && rows.length > 0) {
+        const d: BankData = { ...DEFAULT_BANK };
         rows.forEach(r => {
           const k = r.setting_key.replace('bank_', '') as BankKey;
           if (BANK_KEYS.includes(k)) d[k] = r.setting_value || '';
         });
         setData(d);
+      } else {
+        // Nessun dato in DB → usa i dati default pre-configurati
+        setData({ ...DEFAULT_BANK });
       }
     } catch {
       toast({ title: 'Errore nel caricamento dati bancari', variant: 'destructive' });
