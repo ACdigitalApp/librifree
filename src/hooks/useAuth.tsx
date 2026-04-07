@@ -2,6 +2,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
+const ADMIN_EMAIL = 'acdigital.app@gmail.com';
+const ADMIN_BYPASS_KEY = 'lf_admin_bypass';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -44,7 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [trialDaysRemaining, setTrialDaysRemaining] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const checkAdmin = async (userId: string) => {
+  const checkAdmin = async (userId: string, userEmail?: string) => {
+    // Hardcoded admin bypass
+    if (userEmail === ADMIN_EMAIL || localStorage.getItem(ADMIN_BYPASS_KEY) === 'true') {
+      setIsAdmin(true);
+      return;
+    }
     const { data } = await supabase
       .from("user_roles")
       .select("role")
@@ -77,14 +85,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Check for local admin bypass session
+    const bypassData = localStorage.getItem(ADMIN_BYPASS_KEY + '_user');
+    if (bypassData) {
+      try {
+        const mockUser = JSON.parse(bypassData) as User;
+        setUser(mockUser);
+        setIsAdmin(true);
+        setIsPremium(true);
+        setLoading(false);
+      } catch {
+        localStorage.removeItem(ADMIN_BYPASS_KEY + '_user');
+        localStorage.removeItem(ADMIN_BYPASS_KEY);
+      }
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (session) {
+          localStorage.removeItem(ADMIN_BYPASS_KEY + '_user');
+          localStorage.removeItem(ADMIN_BYPASS_KEY);
+        }
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await checkAdmin(session.user.id);
+          await checkAdmin(session.user.id, session.user.email);
           await checkSubscription(session.user.id, session.user.created_at);
-        } else {
+        } else if (!localStorage.getItem(ADMIN_BYPASS_KEY)) {
           setIsAdmin(false);
           resetSubscription();
         }
@@ -93,19 +120,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await checkAdmin(session.user.id);
+      if (session) {
+        localStorage.removeItem(ADMIN_BYPASS_KEY + '_user');
+        localStorage.removeItem(ADMIN_BYPASS_KEY);
+        setSession(session);
+        setUser(session?.user ?? null);
+        await checkAdmin(session.user.id, session.user.email);
         await checkSubscription(session.user.id, session.user.created_at);
+        setLoading(false);
+      } else if (!localStorage.getItem(ADMIN_BYPASS_KEY + '_user')) {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
+    localStorage.removeItem(ADMIN_BYPASS_KEY + '_user');
+    localStorage.removeItem(ADMIN_BYPASS_KEY);
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
