@@ -1,0 +1,8 @@
+{
+  "appId": "it.librifree.app",
+  "appName": "LibriFree",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
+}
