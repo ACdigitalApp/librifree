@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Product IDs per ogni app (stesso account Stripe)
+// Product IDs per ogni app (cross-app revenue) (stesso account Stripe)
 const APP_PRODUCTS: Record<string, { name: string; productId: string }> = {
   djsengine:        { name: "DJSEngine",          productId: "prod_UJBUiQmIriAp4Y" },
   librifree:        { name: "LibriFree",           productId: "prod_UJCRtdvHaNeVA"  },
