@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Check, X, Zap, BookOpen, Clock, Star } from "lucide-react";
+import { Check, X, Zap, BookOpen, Clock, Star, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const FEATURES = [
   { label: "Lettura libri classici completi", free: true, premium: true },
@@ -20,12 +22,83 @@ const FEATURES = [
 
 export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
+  const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const [polling, setPolling] = useState(false);
   const { user, isPremium, isInTrial, trialDaysRemaining } = useAuth();
 
-  const monthlyPrice = 2.99;
-  const annualPrice = 19.99;
+  const monthlyPrice = 5.99;
+  const annualPrice = 49.99;
   const annualMonthlyEquiv = (annualPrice / 12).toFixed(2);
   const annualSavingPercent = Math.round((1 - annualPrice / (monthlyPrice * 12)) * 100);
+
+  const stripeSessionId = searchParams.get("stripe_session_id");
+
+  const pollStatus = useCallback(async (sessionId: string, attempts: number) => {
+    if (attempts >= 8) { setPaymentStatus("timeout"); setPolling(false); return; }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("stripe-checkout", {
+        body: { action: "status", session_id: sessionId },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.data?.payment_status === "paid") {
+        setPaymentStatus("paid"); setPolling(false);
+        toast.success("Pagamento completato! Sei Premium!");
+      } else if (res.data?.status === "expired") {
+        setPaymentStatus("expired"); setPolling(false);
+      } else {
+        setTimeout(() => pollStatus(sessionId, attempts + 1), 2500);
+      }
+    } catch { setPaymentStatus("error"); setPolling(false); }
+  }, []);
+
+  useEffect(() => {
+    if (stripeSessionId && !polling && !paymentStatus) {
+      setPolling(true); pollStatus(stripeSessionId, 0);
+    }
+  }, [stripeSessionId, polling, paymentStatus, pollStatus]);
+
+  async function handleCheckout() {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("stripe-checkout", {
+        body: { action: "checkout", plan: billingCycle, origin_url: window.location.origin + "/pricing" },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.data?.url) { window.location.href = res.data.url; }
+      else { toast.error(res.data?.error || "Errore durante il checkout"); setLoading(false); }
+    } catch { toast.error("Errore durante il checkout"); setLoading(false); }
+  }
+
+  if (polling) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Verifica pagamento in corso...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentStatus === "paid") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <Check className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Pagamento Completato!</h1>
+          <p className="text-muted-foreground mb-6">Ora hai accesso a tutti i contenuti Premium.</p>
+          <Link to="/biblioteca" className="inline-block px-8 py-3 bg-primary text-primary-foreground rounded-xl font-semibold">
+            Vai alla Biblioteca
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -259,8 +332,14 @@ export default function Pricing() {
               </ul>
 
               {user ? (
-                <button className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors">
-                  {billingCycle === "monthly"
+                <button
+                  onClick={handleCheckout}
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                  ) : billingCycle === "monthly"
                     ? `Abbonati a €${monthlyPrice.toFixed(2)}/mese`
                     : `Abbonati a €${annualPrice.toFixed(2)}/anno`}
                 </button>
