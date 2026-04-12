@@ -161,7 +161,7 @@ export default function AdminUsers() {
 
   const fetchCrossAppRevenue = useCallback(async () => {
     try {
-      const res = await fetch('https://gbxpvbkomjdxcdubyojq.supabase.co/functions/v1/stripe-revenue');
+      const res = await fetch('https://tbqreletxtzaosvyyvnv.supabase.co/functions/v1/stripe-revenue');
       const data = await res.json();
       const error = res.ok ? null : data;
       if (!error && data?.revenue) {
